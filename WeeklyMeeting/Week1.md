@@ -4,3 +4,7 @@
 Write Software Requirements Specification.docx   
 Contact Mentor
 
+배정훈 : SRS 작성 및 발표 자료 준비   
+정상지 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
+김남호 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
+이민성 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
