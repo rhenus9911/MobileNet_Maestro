@@ -1,14 +1,11 @@
-## Week 1   
-**DATE : 2024.03.18.(MON)**   
-
-Write Software Requirements Specification.docx   
-Contact Mentor
-
-배정훈 : SRS 작성 및 발표 자료 준비   
-정상지 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
-김남호 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
-이민성 : 라즈베리 파이 4와 그 주변 모듈 자료 조사   
-
- 
-다음 주 수업시간까지 srs 발표 준비   
-라즈베리파이를 가지고 개발 시작
+# Week 1
+**24.03.18 ~ 24.03.24**
+   
+## 배정훈   
+*   프로젝트 방향성 확인 및 SRS(Software Requirement Specification) 초본 작성   
+## 정상지   
+*   Raspberry Pi 개발환경 조사 및 검토
+## 김남호   
+*   Raspberry Pi 구성요소 확인 및 외부 장치 성능 측정 기준 조사   
+## 이민성   
+*   Raspberry Pi 4 Model B Specifiton 작성 및 멘토 회의 질문사항 작성   
