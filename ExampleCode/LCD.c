@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     gpfsel0 = gpio_virtual_addr + (GPFSEL0/4); //오프셋을 더해줄 떄 메모리는 4bit이기 때문에 나누기 4
     gpset0 = gpio_virtual_addr + (GPSET0/4);
     gpclr0 = gpio_virtual_addr + (GPCLR0/4);
-    *gpfsel0 |= (0<<14);
+    *gpfsel0 |= (0<<14); // |= or연산 후 값을 넣음 << 왼쪽 시프트
     *gpfsel0 |= (0<<13);
     *gpfsel0 |= (1<<12);
 
