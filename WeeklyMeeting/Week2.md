@@ -6,6 +6,6 @@
 ## 정상지   
 *   /proc/cpuinfo 내 정보 정상 작동 범위 확인   
 ## 김남호   
-*   Raspberry Pi 레지스터 접근하는 법 공부(KNH Week2에 정리) 및 예제 코드 실행   
+*   Raspberry Pi 레지스터 접근하는 법 공부(KNH Week2에 정리) 및 /dev/mem 접근  
 ## 이민성   
 *    
