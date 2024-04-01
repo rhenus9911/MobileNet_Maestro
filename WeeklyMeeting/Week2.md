@@ -4,7 +4,7 @@
 ## 배정훈   
 *   BCM2711 datasheet 분석 후 하드웨어 컨트롤 시도   
 ## 정상지   
-*   /proc/cpuinfo 내 정보 정상 작동 범위 확인   
+*   /proc/cpuinfo 내 정보 정상 작동 범위 확인 및 동작 코드 작성   
 ## 김남호   
 *   Raspberry Pi 레지스터 접근하는 법 공부(KNH Week2에 정리) 및 /dev/mem 접근  
 ## 이민성   
