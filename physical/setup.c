@@ -76,12 +76,14 @@ void wiringPiSetup()
 			fd,
 			GPIO_BASE);
 
+	pinToGpio = gpioPin;
+
 	if(gpio == MAP_FAILED)
 	{
 		printf("wiringPiSetup: mmap (GPIO) filed\n");
 		exit(-1);
 	}
-	printf("[+] 0x%x\n", gpio);
+	printf("[+] Virtual Address: 0x%x\n", gpio);
 }
 
 void pinMode(int pin, int mode)
@@ -91,10 +93,23 @@ void pinMode(int pin, int mode)
 	int shift = gpioToShift[pin];
 	
 	if(mode == INPUT) *(gpio+fSel) = (*(gpio+fSel) & ~(7 << shift));
-	else if(mode == OUTPUT) *(gpio+fSel) = (*(gpio+fSel) & ~(7 << shift) | ( 1 << shift));
+	else if(mode == OUTPUT) *(gpio+fSel) = (*(gpio+fSel) & ~(7 << shift) | (1 << shift));
 
-	printf("[+] pin: %d\n", pin);
 	printf("[+] data: %b\n", *(gpio+fSel));
+}
+
+void digitalWrite(int pin, int value)
+{
+	if(value == LOW)
+	{
+		*(gpio + GPCLR/4) = 1 << (pin & 31);
+		printf("[+] LOW data: %b\n", *(gpio + GPCLR/4));
+	}
+	else if(value == HIGH)
+	{
+		*(gpio + GPSET/4) = 1 << (pin & 31);
+		printf("[+] HIGH data: %b\n", *(gpio + GPSET/4));
+	}
 }
 
 int main()
@@ -102,6 +117,9 @@ int main()
 	int pin = 16;
 	wiringPiSetup();
 	pinMode(pin, OUTPUT);
+	digitalWrite(pin, LOW);
+
+	return 0;
 }
 
 
