@@ -8,9 +8,9 @@ int main(int argc, char **argv)
 	
 	FILE *cpuinfo;
     char buff[1024];
-    memset(buff,NULL,sizeof(buff));
+    memset(buff,0,sizeof(buff));
 
-	cpuinfo = popen("grep processor | /proc/cpuinfo | wc -l", "r");
+	cpuinfo = popen("grep processor | -wc -l", "r");
 	printf("%x\n",cpuinfo);
 	
 	if(cpuinfo==NULL){
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	else if(fgets(buff,sizeof(buff),cpuinfo)!=NULL)
     {
         int nproc = atoi(buff);
-        printf("number of processor : %d\n",nproc);
+        printf("number of processor : %o\n",nproc);
     }
 	pclose(cpuinfo);
 	return 0;
