@@ -7,12 +7,14 @@ int main(int argc, char **argv)
     FILE *cpuinfo;
     FILE *modelname;
     FILE *lscpu;
+    FILE *lsmem;
 
     char buffer[1024]; 
 
     cpuinfo = popen("grep processor /proc/cpuinfo | wc -l", "r");
     modelname = popen("grep Model /proc/cpuinfo","r");
     lscpu = popen("lscpu | grep 'CPU'", "r");
+    lsmem = popen("free | grep Mem | awk '{print $7}' ","r");
 
 
     if(cpuinfo == NULL){
@@ -22,6 +24,13 @@ int main(int argc, char **argv)
 
     while(fgets(buffer,sizeof(buffer),lscpu)){
         printf("%s",buffer);
+    }
+
+    if(fgets(buffer, sizeof(buffer), lsmem) != NULL){
+        int mem_avail = atoi(buffer);
+        if(mem_avail>0){
+            printf("Memory access Okay\n");
+        }
     }
 
     if(fgets(buffer, sizeof(buffer), modelname) != NULL){
@@ -43,6 +52,7 @@ int main(int argc, char **argv)
     pclose(cpuinfo);
     pclose(modelname);
     pclose(lscpu);
+    pclose(lsmem);
 
     return 0;
 }
