@@ -1,4 +1,4 @@
-//배열에 담아서 해야함
+//배열에 담아서 해야함 GPIO0 ~GPIO26번까지 볼트, 그라운드 제외
 
 #include <stdio.h>
 #include <stdlib.h>
