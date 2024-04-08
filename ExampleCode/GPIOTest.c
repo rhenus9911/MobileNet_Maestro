@@ -140,7 +140,7 @@ int main(int argc, char **argv)
                 *gpfsel2 &= 0;
                 *gpset0 &= 0;
                 *gpclr0 &= 0;
-                //if(j == 25) k -= 6; // failed test
+                //if(j == 25) k -= 6; // failed test  
                 k += 3;
             }
         }
