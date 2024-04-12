@@ -6,6 +6,6 @@
 ## 정상지   
 *   Raspberry Pi 개발환경 조사 및 검토
 ## 김남호   
-*   Raspberry Pi 구성요소 확인 및 외부 장치 성능 측정 기준 조사    
+*   Raspberry Pi 구성요소 확인 및 외부 장치 성능 측정 기준 조사   
 ## 이민성   
 *   Raspberry Pi 4 Model B Specifiton 작성 및 멘토 회의 질문사항 작성   
