@@ -203,3 +203,10 @@ void Cpu_Test(void){
 
     
 }
+
+
+// int main(){
+//     Gpio_Test();
+//     Cpu_Test();
+
+// }
