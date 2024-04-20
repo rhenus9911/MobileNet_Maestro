@@ -26,6 +26,7 @@
 #define GPLEV1 0x38
 
 void Gpio_Test(void){
+    printf("************HardWare Test Start************\n");
     int fd;
         if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0)
         {
@@ -41,7 +42,7 @@ void Gpio_Test(void){
             perror("[Error] mmap() : ");
             exit(-1);
         }
-
+        printf("GPIO Pin Test Start : ");
         volatile unsigned int *gpio_virtual_addr;
         volatile unsigned int *gpfsel0; // input output
         volatile unsigned int *gpfsel1; // input output
@@ -157,7 +158,7 @@ void Gpio_Test(void){
         //printf("gpfsel0 virtual addr : %p\n", gpfsel0);
         //printf("gpset0 virtual addr : %p\n", gpset0);
         //printf("gpclr0 virtual addr : %p\n", gpclr0);
-
+        printf("GPIO Finsih \n");
         munmap(gpio_base_addr, 4096);
         close(fd);
         
@@ -167,14 +168,14 @@ void Cpu_Test(void){
         FILE *modelname = popen("grep Model /proc/cpuinfo", "r");
         FILE *lscpu = popen("lscpu | grep 'CPU'", "r");
         FILE *lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
-
+        
         if (cpuinfo == NULL || modelname == NULL || lscpu == NULL || lsmem == NULL) {
             printf("Failed to run command\n");
             return;
         }
 
         //printFile(lscpu);
-
+        printf("CPU Test Start \n");
         char buffer[BUFFER_SIZE];
         if (fgets(buffer, sizeof(buffer), lsmem) != NULL) {
             int mem_avail = atoi(buffer);
@@ -195,7 +196,7 @@ void Cpu_Test(void){
             printf("Failed to read output\n");
             return;
         }
-
+        printf("CPU Test Finsih \n");
         pclose(cpuinfo);
         pclose(modelname);
         pclose(lscpu);
