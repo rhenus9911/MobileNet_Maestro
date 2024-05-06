@@ -74,11 +74,7 @@ void cpuFuncCheck()
 	while(fgets(buffer, sizeof(buffer), fp) != NULL)
 	{
 		//printf("[+] %s", buffer);
-		if(strstr(buffer, "Threads started!") != NULL)
-		{
-			printf("    [+] %s\n", buffer);
-		}
-		else if((ptr = strstr(buffer, "events per second")) != NULL)
+		if((ptr = strstr(buffer, "events per second")) != NULL)
 		{
 			sscanf(ptr, "events per second: %lf", &cpuSpeed);
 			printf("    [+] events per second: %.2lf\n", cpuSpeed);
@@ -88,6 +84,32 @@ void cpuFuncCheck()
 	pclose(fp);
 	
 }
+
+void memoryFuncCheck()
+{
+	char buffer[1024];
+	char *ptr;
+	double oper;
+	double trans;
+	
+	FILE *fp = popen("sysbench memory --threads=4 run", "r");
+	while(fgets(buffer, sizeof(buffer), fp) != NULL)
+	{
+		if((ptr = strstr(buffer, "Total operations")) != NULL)
+		{
+			sscanf(ptr, "Total operations: %lf", &oper);
+			printf("    [+] Total operations: %.2lf\n", oper);
+		}
+		else if((ptr = strstr(buffer, "transferred")) != NULL)
+		{
+			sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
+			printf("    [+] MiB Transferred: %.2lf MiB/sec\n", trans);
+		}
+	}	
+
+	pclose(fp);
+}
+
 int main(int argc, char **argv)
 {
 	printf("[+] CPU, Processor Check\n");
@@ -95,6 +117,13 @@ int main(int argc, char **argv)
 
 	printf("[+] CPU Function Check\n");
 	cpuFuncCheck();
+	
+	printf("[+] CPU Clear\n");
+
+	printf("[+] Memory Function Check\n");
+	memoryFuncCheck();
+
+	printf("[+] Memory Clear\n");
 	return 0;
 
 }
