@@ -5,6 +5,9 @@
 #include <stdint.h>
 
 #define BUFFER_SIZE 1024
+#define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
+#define RESET "\033[0m"
 
 void printFile(FILE *file) {
     char buffer[BUFFER_SIZE];
@@ -22,7 +25,7 @@ void cpuNumCheck()
 
 	if (cpuinfo == NULL || modelname == NULL || lscpu == NULL || lsmem == NULL)
 	{
-		printf("    [!] CPU is not run");
+		printf(RED "    [!] CPU is not run" RESET);
 		exit(-1);
 	}
 
@@ -33,21 +36,21 @@ void cpuNumCheck()
         	int mem_avail = atoi(buffer);
         	if (mem_avail > 0)
 		{
-            		printf("    [+] Memory access Okay\n");
+            		printf(GREEN "    [+] Memory access Okay\n" RESET);
         	}
     	}
 
     	if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL) {
         	int num_processors = atoi(buffer);
-		printf("    [+] Number of processors: %d\n", num_processors);
+		printf(GREEN "    [+] Number of processors: %d\n" RESET, num_processors);
          	if (num_processors == 4)
 		{
-            		printf("    [+] Processor is alright\n");
+            		printf(GREEN "    [+] Processor is alright\n" RESET);
         	}
     	}
 	else
 	{
-        	printf("    [!] Failed to read output\n");
+        	printf(RED "    [!] Failed to read output\n" RESET);
         	exit(-1);
     	}
 
@@ -68,7 +71,7 @@ void cpuFuncCheck()
 	FILE *fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
 	if(fp == NULL)
 	{
-		printf("    [!] cpu Funciton is Failed\n");
+		printf(GREEN "    [!] cpu Funciton is Failed\n" RESET);
 		exit(-1);
 	}
 	while(fgets(buffer, sizeof(buffer), fp) != NULL)
@@ -77,7 +80,7 @@ void cpuFuncCheck()
 		if((ptr = strstr(buffer, "events per second")) != NULL)
 		{
 			sscanf(ptr, "events per second: %lf", &cpuSpeed);
-			printf("    [+] events per second: %.2lf\n", cpuSpeed);
+			printf(GREEN "    [+] events per second: %.2lf\n" RESET, cpuSpeed);
 		}
 	}
 
@@ -98,12 +101,12 @@ void memoryFuncCheck()
 		if((ptr = strstr(buffer, "Total operations")) != NULL)
 		{
 			sscanf(ptr, "Total operations: %lf", &oper);
-			printf("    [+] Total operations: %.2lf\n", oper);
+			printf(GREEN "    [+] Total operations: %.2lf\n" RESET, oper);
 		}
 		else if((ptr = strstr(buffer, "transferred")) != NULL)
 		{
 			sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-			printf("    [+] MiB Transferred: %.2lf MiB/sec\n", trans);
+			printf(GREEN "    [+] MiB Transferred: %.2lf MiB/sec\n" RESET, trans);
 		}
 	}	
 
