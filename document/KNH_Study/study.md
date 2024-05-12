@@ -58,5 +58,10 @@ Dulty Cycle
      - High 상태와 Low 상태 파형의 비율을 듀티 사이클
      - 원래는 통신용으로 개발된 기술이었으나 전류, 전압 제어용 사용
      - LED를 예로 들면 아날로그 신호는 Sin파이기때문에 밝기까지 조절 가능 디지털 신호는 불가능 PWm는 가능 이걸 하는 것이 듀티 사이클
-     -        
+
+- 라즈베리 파이에서의 PWM는?
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/895f0ed4-ae45-420b-933d-3248f438db64)
+
+GPIO 12, 13, 18, 19를 사용하면 된다
+
    
