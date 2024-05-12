@@ -47,7 +47,9 @@ int main() {
 ```
 
 ##2. 통신의 정상성 테스트
+
 주소가 0x48인 장치의 예제
+
 ```
 #include <stdio.h>
 #include <wiringPi.h>
