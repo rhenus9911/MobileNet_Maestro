@@ -47,6 +47,9 @@
      
 
 # PWM
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/70706b63-20af-4a80-9a56-27bb6806d393)
+
+Dulty Cycle
 
 - PWM이란?
    - Pulse Width Modulation
