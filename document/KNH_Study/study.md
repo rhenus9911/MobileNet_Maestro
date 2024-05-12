@@ -51,8 +51,10 @@
 
 Dulty Cycle
 
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/45ac8167-b3d3-42b5-ad5e-25e00c8906d6)
+
 - PWM이란?
    - Pulse Width Modulation
      - High 상태와 Low 상태 파형의 비율을 듀티 사이클
-       
+     - 원래는 통신용으로 개발된 기술이었으나 전류, 전압 제어용 사용       
    
