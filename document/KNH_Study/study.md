@@ -83,7 +83,7 @@ Dulty Cycle
 GPIO 12, 13, 18, 19를 사용하면 된다.
 GPIO 12, 18은 PWM0이기 떄문에 base address가 0x7e20c000 13, 19은 PWM1이기 때문에 base address 0x7e20c800이다.
 
-![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/72957a78-22f8-4e77-9687-9605e223694b)
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/f9e52183-21c2-4e20-8841-a6e652bf0db3)
 
 ![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/39ec7f4f-4459-458f-b09e-51b815a47520)
 
@@ -91,4 +91,20 @@ GPIO 12, 18은 PWM0이기 떄문에 base address가 0x7e20c000 13, 19은 PWM1이
  - 0: PWM 알고리즘이 사용됩니다. 이 모드에서는 PWM 신호의 듀티 사이클이 비율로 조정되어, ON과 OFF 상태가 주기적으로 변환된다.
  - 1: M/S 전송이 사용됩니다. 이 모드에서는 듀티 사이클이 마크(활성) 시간과 스페이스(비활성) 시간으로 직접 지정된다. 
 
+- STA
+   - PWM의 현재 상태를 보여주는 레지스터입니다. 오류 상태나 FIFO의 상태를 확인할 수 있다.
+      - FIFO가 왜 나오지?
+         - PWM 모듈에서 FIFO는 일련의 PWM 값들을 버퍼링하는 데 사용됩니다. 이를 통해 연속적인 PWM 신호를 생성할 수 있다.  
+
+ - DMAC
+    - WM에 Direct Memory Access(DMA)를 설정하는 레지스터입니다. DMA를 통해 CPU의 개입 없이도 메모리에서 직접 데이터를 PWM FIFO로 전송할 수 있도록 설정
+       - DMA이 뭐지?
+          - Direct Memory Access로 말 그대로 다이렉트로 데이터를 메모리에 보낸다. - > CPU의 직접적인 관여 없이 메모리와 하드웨어 장치 간에 데이터를 직접 전송할 수 있게 해줌  
+
+- RNG1
+   - PWM 채널 1의 주기를 설정하는 레지스터입니다
+
+- DAT1
+   - PWM 채널 1의 듀티 사이클을 설정하는 레지스터 
+ 
    
