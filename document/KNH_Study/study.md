@@ -60,8 +60,17 @@ Dulty Cycle
      - LED를 예로 들면 아날로그 신호는 Sin파이기때문에 밝기까지 조절 가능 디지털 신호는 불가능 PWm는 가능 이걸 하는 것이 듀티 사이클
 
 - 라즈베리 파이에서의 PWM는?
-![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/895f0ed4-ae45-420b-933d-3248f438db64)
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/f0a5955d-3159-43fe-92ec-c041130fffaa)
 
-GPIO 12, 13, 18, 19를 사용하면 된다
+GPIO 12, 13, 18, 19를 사용하면 된다.
+GPIO 12, 18은 PWM0이기 떄문에 base address가 0x7e20c000 13, 19은 PWM1이기 때문에 base address 0x7e20c800이다.
+
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/72957a78-22f8-4e77-9687-9605e223694b)
+
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/39ec7f4f-4459-458f-b09e-51b815a47520)
+
+- CTL는 PWM Control이다. 오프셋도 32bit로 구성되어 있으며 15번째 비트를 통해 2가지 모드를 쓸 수 있다.
+ - 0: PWM 알고리즘이 사용됩니다. 이 모드에서는 PWM 신호의 듀티 사이클이 비율로 조정되어, ON과 OFF 상태가 주기적으로 변환된다.
+ - 1: M/S 전송이 사용됩니다. 이 모드에서는 듀티 사이클이 마크(활성) 시간과 스페이스(비활성) 시간으로 직접 지정된다. 
 
    
