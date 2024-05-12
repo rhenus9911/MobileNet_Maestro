@@ -9,7 +9,7 @@
 - 데이터 버스(Data Bus)
    - 데이터 전달
    - 각 구성요소(CPU, Memory, I/O Unit)는 양방향으로 데이터 전달이 가능한 버스를 사용
-   -  
+   
 - 제어 버스(Control Bus)
    - 제어 신호 전달
    - Read와 Write신호가 전달
