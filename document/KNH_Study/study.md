@@ -12,6 +12,8 @@
    
 
 # 어떻게 접근?
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/94a5e388-5e1b-48e0-98fa-d6e13715638a)
+
 
 - GPLSEL :GPIO의 입출력을 결정하는거 해당 비트에 000을 주면 input 001 를 주면 아웃풋
     - GPLSEL0 : 0번핀부터 9번핀까지 오프셋: 0x00
@@ -42,3 +44,6 @@
         - 3번 비트를 1로 주면 3번 핀이 LOW 4번 비트를 1로 주면 4번 핀이 LOW
     - GPCLR1: 32번핀부터 57번핀까지 설정
         - 1번 비트를 1로 주면 32번 핀이 LOW 4번 비트를 1로 주면 35번 핀이 LOW
+     
+
+# PWM
