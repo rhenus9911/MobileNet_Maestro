@@ -2,6 +2,11 @@
 ![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/fb660d10-0e15-447f-96fc-06b6ccc37d13)
 
 
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/07b2d6c1-67e9-4049-ade4-f359a42b2e4c)
+
+35비트 주소쳬계를 쓰지만 c언어로 접근하기 위해서는 32비트를 써야한다.
+
+
 
 
 - GPLSEL :GPIO의 입출력을 결정하는거 해당 비트에 000을 주면 input 001 를 주면 아웃풋
