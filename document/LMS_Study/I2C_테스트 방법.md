@@ -7,7 +7,7 @@ i2c-tools와 libi2c-dev 라이브러리 설치
 sudo apt-get update
 sudo apt-get install i2c-tools libi2c-dev
 
-***
+```
 #include <stdio.h>
 #include <stdlib.h>
 #include <linux/i2c-dev.h>
@@ -44,11 +44,11 @@ int main() {
     close(file);
     return 0;
 }
-***
+```
 
 ##2. 통신의 정상성 테스트
 주소가 0x48인 장치의 예제
-***
+```
 #include <stdio.h>
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
@@ -75,4 +75,4 @@ int main() {
 
     return 0;
 }
-***
+```
