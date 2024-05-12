@@ -47,3 +47,9 @@
      
 
 # PWM
+
+- PWM이란?
+   - Pulse Width Modulation
+     - High 상태와 Low 상태 파형의 비율을 듀티 사이클
+       
+   
