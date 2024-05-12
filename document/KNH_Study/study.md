@@ -1,3 +1,21 @@
+# 시스템 버스
+![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/cc5964e2-ec73-433c-b11d-b5c5a0c917d7)
+
+- 주소 버스(Address Bus)
+   - 메모리의 주소나 I/O Unit의 포트 번호를 전달
+   - CPU와 Memory는 단방향으로 데이터 전달이 가능한 버스를 이용함으로써 주소 전달은 CPU에서 메모리로만 가능
+   - CPU, Memory는 I/O Unit과 양방향으로 데이터 전달이 가능한 버스를 사용
+   - 
+- 데이터 버스(Data Bus)
+   - 데이터 전달
+   - 각 구성요소(CPU, Memory, I/O Unit)는 양방향으로 데이터 전달이 가능한 버스를 사용
+   -  
+- 제어 버스(Control Bus)
+   - 제어 신호 전달
+   - Read와 Write신호가 전달
+   - 각 구성요소(CPU, Memory, I/O Unit)는 양방향으로 데이터 전달이 가능한 버스를 사용
+
+
 # 주소가 매핑되는 과정
 ![image](https://github.com/rhenus9911/MobileNet_Maestro/assets/100738276/fb660d10-0e15-447f-96fc-06b6ccc37d13)
 
