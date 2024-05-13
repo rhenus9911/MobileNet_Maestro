@@ -4,8 +4,11 @@ sudo raspi-config를 실행하고 "Interfacing Options"에서 "I2C"를 활성화
 
 I2C 도구 설치
 i2c-tools와 libi2c-dev 라이브러리 설치
+
+```
 sudo apt-get update
 sudo apt-get install i2c-tools libi2c-dev
+```
 
 ```
 #include <stdio.h>
