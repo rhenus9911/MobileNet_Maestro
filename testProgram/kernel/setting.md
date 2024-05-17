@@ -44,5 +44,3 @@ uname -r
 sudo reboot 
 uname -r
 ```
-
-7. 커널 모듈 
