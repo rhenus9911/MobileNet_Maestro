@@ -1,7 +1,7 @@
-obj-m += testkernel.o
+obj-m += test_module.o
 
 all:
-\tmake -C /lib/modules/$(uname -r)/build M=$(pwd) modules
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
-\tmake -C /lib/modules/$(uname -r)/build M=$(pwd) clean
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
