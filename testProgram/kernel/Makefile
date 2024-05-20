@@ -1,9 +1,7 @@
-obj-m += test_module.o
-
-KERNELDIR ?= /usr/src/linux/build
+obj-m += testkernel.o
 
 all:
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 
 clean:
-	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) -C /lib/modules/$(uname -r)/build M=$(pwd) clean
