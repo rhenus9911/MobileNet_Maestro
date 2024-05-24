@@ -46,7 +46,9 @@ uname -r
 ```
 
 
-7. testkernel.c
+### 라즈베리파이4 커널 코드
+
+1. testkernel.c
 ```c
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -71,7 +73,7 @@ MODULE_DESCRIPTION("A simple test module");
 
 ```
 
-8.Makefile
+2.Makefile
 ```Makefile
 obj-m += testkernel.o
 KDIR := /usr/src/linux
@@ -85,7 +87,7 @@ clean:
 
 ```
 
-9.testkernel.sh   
+3.testkernel.sh   
 ```shell
 #!/bin/bash
 
@@ -143,7 +145,7 @@ dmesg | tail -n 10
 
 ```
 
-10.shell code 실행
+4.shell code 실행
 
 ```bash
 ./testkernel.sh
