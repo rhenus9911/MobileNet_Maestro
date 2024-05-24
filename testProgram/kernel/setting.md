@@ -86,7 +86,7 @@ clean:
 ```
 
 9.testkernel.sh   
-'''
+```shell
 #!/bin/bash
 
 # 모듈 소스 파일
@@ -141,7 +141,7 @@ fi
 # 커널 로그 확인
 dmesg | tail -n 10
 
-'''
+```
 
 10.shell code 실행
 '''bash
