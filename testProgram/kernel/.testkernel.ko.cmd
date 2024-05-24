@@ -1,0 +1,1 @@
+savedcmd_/home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.ko := ld -r -EL  -maarch64elf -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.ko /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.o /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.mod.o;  true

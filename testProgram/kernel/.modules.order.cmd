@@ -1,0 +1,1 @@
+savedcmd_/home/sangji/MobileNet_Maestro/testProgram/kernel/modules.order := {   echo /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.o; :; } > /home/sangji/MobileNet_Maestro/testProgram/kernel/modules.order

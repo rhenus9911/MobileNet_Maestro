@@ -1,0 +1,1 @@
+savedcmd_/home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.mod := printf '%s\n'   testkernel.o | awk '!x[$$0]++ { print("/home/sangji/MobileNet_Maestro/testProgram/kernel/"$$0) }' > /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.mod
