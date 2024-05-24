@@ -144,6 +144,7 @@ dmesg | tail -n 10
 ```
 
 10.shell code 실행
-'''bash
+
+```bash
 ./testkernel.sh
-'''
+```
