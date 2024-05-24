@@ -85,8 +85,8 @@ clean:
 
 ```
 
-9.testkernel.sh
-'''sh
+9.testkernel.sh   
+'''
 #!/bin/bash
 
 # 모듈 소스 파일
