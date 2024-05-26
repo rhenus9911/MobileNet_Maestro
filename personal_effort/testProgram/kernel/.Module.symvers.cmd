@@ -1,0 +1,1 @@
+savedcmd_/home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/Module.symvers -T /home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/modules.order -i Module.symvers -e 
