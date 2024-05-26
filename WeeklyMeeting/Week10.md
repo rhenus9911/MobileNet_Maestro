@@ -2,7 +2,7 @@
 **24.05.20 ~ 24.05.26**
    
 ## 배정훈   
-*  
+*  CPU Test Program Memory Test Program 작성 완료   
 ## 정상지   
 *  
 ## 김남호   
