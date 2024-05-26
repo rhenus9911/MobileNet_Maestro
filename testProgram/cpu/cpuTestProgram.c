@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <time.h>
+#include <math.h>
 
 #define BUFFER_SIZE 1024
 #define RED "\033[0;31m"
@@ -61,7 +63,7 @@ void cpuNumCheck()
 
 }
 
-void cpuFuncCheck()
+void cpuPerformCheck()
 {
 	char buffer[1024];
 	double cpuSpeed;
@@ -71,7 +73,7 @@ void cpuFuncCheck()
 	FILE *fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
 	if(fp == NULL)
 	{
-		printf(GREEN "    [!] cpu Funciton is Failed\n" RESET);
+		printf(RED "    [!] cpu Funciton is Failed\n" RESET);
 		exit(-1);
 	}
 	while(fgets(buffer, sizeof(buffer), fp) != NULL)
@@ -87,6 +89,51 @@ void cpuFuncCheck()
 	pclose(fp);
 	
 }
+
+void cpuIPSCheck()
+{
+	clock_t start, end;
+	double cpu_time;
+	long long int instructions = 10006964235;
+	int loop = 1000000000;
+	double result = 0.0;
+
+	start = clock();
+	for(int i=0;i<loop;i++){}
+	end = clock();
+
+	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+	result = instructions / cpu_time;
+	result /= 1000000000;
+
+	printf("    [+] IPS: %.2lf GIPS\n", result);
+}
+
+void cpuFPCheck()
+{
+	double a = 1.1, b = 2.2, c = 3.3;
+	long num = 100000000;
+	clock_t start, end;
+	double cpu_time, result = 0.0;
+
+	start = clock();
+	for(long i = 1;i<num;i++)
+        {
+		result += sin(a) * cos(b) / tan(c);
+		result += log(a) * exp(b) / sqrt(c);
+		a += 0.1;
+		b += 0.1;
+		c += 0.1;
+	}
+	end = clock();
+
+	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+
+	double flops = num / cpu_time;
+	flops /= 1000;
+
+	printf("    [+] FLOPS: %.2lf MFLOPS\n", flops);
+}	
 
 void memoryFuncCheck()
 {
@@ -118,13 +165,20 @@ int main(int argc, char **argv)
 	printf("[+] CPU, Processor Check\n");
 	cpuNumCheck();
 
-	printf("[+] CPU Function Check\n");
-	cpuFuncCheck();
+	printf("[+] CPU Performance Check\n");
+	cpuPerformCheck();
+
+	printf("[+] CPU IPS Check\n");
+	cpuIPSCheck();
+
+	printf("[+] CPU Floating Point Check\n");
+	cpuFPCheck();
+
 	
 	printf("[+] CPU Clear\n");
 
-	printf("[+] Memory Function Check\n");
-	memoryFuncCheck();
+	//printf("[+] Memory Function Check\n");
+	//memoryFuncCheck();
 
 	printf("[+] Memory Clear\n");
 	return 0;
