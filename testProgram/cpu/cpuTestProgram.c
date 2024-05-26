@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <sys/time.h>
 #include <time.h>
 #include <math.h>
 
@@ -11,11 +12,11 @@
 #define GREEN "\033[0;32m"
 #define RESET "\033[0m"
 
-void printFile(FILE *file) {
-    char buffer[BUFFER_SIZE];
-    while (fgets(buffer, sizeof(buffer), file)) {
-        printf("%s", buffer);
-    }
+double timeCheck()
+{
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6;
 }
 
 void cpuNumCheck()
@@ -30,36 +31,35 @@ void cpuNumCheck()
 		printf(RED "    [!] CPU is not run" RESET);
 		exit(-1);
 	}
-
-	//printFile(lscpu);
-
-    	char buffer[BUFFER_SIZE];
-    	if (fgets(buffer, sizeof(buffer), lsmem) != NULL) {
-        	int mem_avail = atoi(buffer);
-        	if (mem_avail > 0)
+    char buffer[BUFFER_SIZE];
+    if (fgets(buffer, sizeof(buffer), lsmem) != NULL)
+    {
+        int mem_avail = atoi(buffer);
+        if (mem_avail > 0)
 		{
-            		printf(GREEN "    [+] Memory access Okay\n" RESET);
-        	}
-    	}
+            printf(GREEN "    [+] Memory access Okay\n" RESET);
+        }
+    }
 
-    	if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL) {
-        	int num_processors = atoi(buffer);
-		printf(GREEN "    [+] Number of processors: %d\n" RESET, num_processors);
-         	if (num_processors == 4)
+    if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
+    {
+        int num_processors = atoi(buffer);
+        printf(GREEN "    [+] Number of processors: %d\n" RESET, num_processors);
+        if (num_processors == 4)
 		{
-            		printf(GREEN "    [+] Processor is alright\n" RESET);
-        	}
-    	}
+            printf(GREEN "    [+] Processor is alright\n" RESET);
+        }
+    }
 	else
 	{
-        	printf(RED "    [!] Failed to read output\n" RESET);
-        	exit(-1);
-    	}
+        printf(RED "    [!] Failed to read output\n" RESET);
+        exit(-1);
+    }
 
-    	pclose(cpuinfo);
-    	pclose(modelname);
-    	pclose(lscpu);
-    	pclose(lsmem);
+    pclose(cpuinfo);
+    pclose(modelname);
+    pclose(lscpu);
+    pclose(lsmem);
 
 }
 
@@ -78,7 +78,6 @@ void cpuPerformCheck()
 	}
 	while(fgets(buffer, sizeof(buffer), fp) != NULL)
 	{
-		//printf("[+] %s", buffer);
 		if((ptr = strstr(buffer, "events per second")) != NULL)
 		{
 			sscanf(ptr, "events per second: %lf", &cpuSpeed);
@@ -98,9 +97,9 @@ void cpuIPSCheck()
 	int loop = 1000000000;
 	double result = 0.0;
 
-	start = clock();
+	start = timeCheck();
 	for(int i=0;i<loop;i++){}
-	end = clock();
+	end = timeCheck();
 
 	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
 	result = instructions / cpu_time;
@@ -116,16 +115,16 @@ void cpuFPCheck()
 	clock_t start, end;
 	double cpu_time, result = 0.0;
 
-	start = clock();
+	start = timeCheck();
 	for(long i = 1;i<num;i++)
-        {
+    {
 		result += sin(a) * cos(b) / tan(c);
 		result += log(a) * exp(b) / sqrt(c);
 		a += 0.1;
 		b += 0.1;
 		c += 0.1;
 	}
-	end = clock();
+	end = timeCheck();
 
 	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
 
@@ -134,31 +133,6 @@ void cpuFPCheck()
 
 	printf("    [+] FLOPS: %.2lf MFLOPS\n", flops);
 }	
-
-void memoryFuncCheck()
-{
-	char buffer[1024];
-	char *ptr;
-	double oper;
-	double trans;
-	
-	FILE *fp = popen("sysbench memory --threads=4 run", "r");
-	while(fgets(buffer, sizeof(buffer), fp) != NULL)
-	{
-		if((ptr = strstr(buffer, "Total operations")) != NULL)
-		{
-			sscanf(ptr, "Total operations: %lf", &oper);
-			printf(GREEN "    [+] Total operations: %.2lf\n" RESET, oper);
-		}
-		else if((ptr = strstr(buffer, "transferred")) != NULL)
-		{
-			sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-			printf(GREEN "    [+] MiB Transferred: %.2lf MiB/sec\n" RESET, trans);
-		}
-	}	
-
-	pclose(fp);
-}
 
 int main(int argc, char **argv)
 {
@@ -173,14 +147,9 @@ int main(int argc, char **argv)
 
 	printf("[+] CPU Floating Point Check\n");
 	cpuFPCheck();
-
 	
 	printf("[+] CPU Clear\n");
 
-	//printf("[+] Memory Function Check\n");
-	//memoryFuncCheck();
-
-	printf("[+] Memory Clear\n");
 	return 0;
 
 }
