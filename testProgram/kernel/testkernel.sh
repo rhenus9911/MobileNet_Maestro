@@ -1,19 +1,26 @@
 #!/bin/bash
 
 # 모듈 소스 파일
-MODULE_NAME="testkernel"
+MODULE_NAME="nobrand"
 SRC_FILE="${MODULE_NAME}.c"
+KDIR := /usr/src/linux
 
 # 커널 모듈 빌드용 Makefile 생성
-# cat <<EOF > Makefile
-# obj-m += ${MODULE_NAME}.o
+cat <<EOF > Makefile
+obj-m += testkernel.o
+KDIR := /usr/src/linux
+PWD := $(shell pwd)
 
-# all:
-#	\$(MAKE) -C /lib/modules/\$(uname -r)/build M=\$(pwd) modules
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
 
-# clean:
-#	\$(MAKE) -C /lib/modules/\$(uname -r)/build M=\$(pwd) clean
-# EOF
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+    rm -rf *.ko
+    rm -rf *.mod.*
+    rm -rf .*.cmd
+    rm -rf *.o
+EOF
 
 # 커널 모듈 빌드
 make
