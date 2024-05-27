@@ -1,9 +1,9 @@
 obj-m += testkernel.o
 KDIR := /usr/src/linux
-PWD := $(shell pwd)
+PWD := 
 
 all:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	 -C  M= modules
 
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	 -C  M= clean
