@@ -35,21 +35,23 @@ int main(void) {
         fprintf(stderr, "Failed to initialize wiringPi\n");
         return 1;
     }
-    print("PWMTest Start\n");
+    printf("PWM Test Start\n");
     pinMode(GPIO_PIN, INPUT);
     pinMode(4, OUTPUT);
-    softPwmCreate(4, 0, 100);
+    softPwmCreate(4, 0, 100); // pwmRange
     int cnt = 0;
-    for(int i = 0; i < 10; i++){
-        softPwmWrite(4, i);
-        int frequency = measureFrequency(4);
-        //printf("Measured Frequency: %d Hz\n", frequency);
+    for(int i = 0; i < 5; i++){
+        softPwmWrite(4, i); // value
+        int frequency = measureFrequency(4); // value / pwmRange = dutycylce
+        printf("Measured Frequency: %d Hz\n", frequency);
+        if(i == 0 && frequency != 0) continue;
         if(frequency != 0) cnt++;
         delay(1000);  // 1초 대기
         
     }
-    if(cnt > 3) printf("Suceess");
-    else printf("Failed");
+    if(cnt > 3) printf("Success\n");
+    else printf("Failed\n");
+    printf("PWM Finshed\n");
     //printf("%d", cnt);
   
 
