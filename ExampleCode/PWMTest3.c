@@ -35,7 +35,7 @@ int main(void) {
         fprintf(stderr, "Failed to initialize wiringPi\n");
         return 1;
     }
-
+    print("PWMTest Start\n");
     pinMode(GPIO_PIN, INPUT);
     pinMode(4, OUTPUT);
     softPwmCreate(4, 0, 100);
@@ -48,7 +48,9 @@ int main(void) {
         delay(1000);  // 1초 대기
         
     }
-    printf("%d", cnt);
+    if(cnt > 3) printf("Suceess");
+    else printf("Failed");
+    //printf("%d", cnt);
   
 
     return 0;
