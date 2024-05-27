@@ -16,10 +16,6 @@ all:
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
-    rm -rf *.ko
-    rm -rf *.mod.*
-    rm -rf .*.cmd
-    rm -rf *.o
 EOF
 
 # 커널 모듈 빌드

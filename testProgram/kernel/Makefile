@@ -7,8 +7,3 @@ all:
 
 clean:
 	 -C  M= clean
-    rm -rf *.ko
-    rm -rf *.mod.*
-    rm -rf .*.cmd
-    rm -rf *.o
-
