@@ -1,59 +1,64 @@
 #include <wiringPi.h>
 #include <stdio.h>
-#include <time.h>
-#include <softPwm.h>
-#define GPIO_PIN 18  // wiringPi 핀 번호 설정
+#include <stdlib.h>
+#include <unistd.h>
 
-int measureFrequency(int pin) {
-    int previousState = digitalRead(pin);
-    int eventCount = 0;
-    struct timespec startTime, currentTime;
+#define PWM_PIN18 1    // BCM_GPIO 18, Physical Pin 12
+#define INPUT_PIN 7  // BCM_GPIO 4, Physical Pin 7
+#define PWM_PIN12 26 // BCM 12, wipi 26
+#define PWM_PIN13 23 // 13, 23
+#define PWM_PIN19 24 // 19, 24
 
-    // 현재 시간을 startTime에 저장합니다.
-    clock_gettime(CLOCK_MONOTONIC_RAW, &startTime);
-    
-    double elapsedTime = 0;
-    
-    // 1초 동안 상태 변화를 감지합니다.
-    while (elapsedTime < 1.0) {
-        int currentState = digitalRead(pin);
-        if (currentState != previousState) {
-            eventCount++;
-            previousState = currentState;
-        }
-        clock_gettime(CLOCK_MONOTONIC_RAW, &currentTime);
-        elapsedTime = (currentTime.tv_sec - startTime.tv_sec) 
-                    + (currentTime.tv_nsec - startTime.tv_nsec) / 1000000000.0;
+void setup() {
+    if (wiringPiSetup() == -1) {
+        printf("wiringPi 초기화 실패\n");
+        exit(1);
     }
-    
-    // 주파수 계산 (사이클은 상태가 2번 변경되어야 하므로 eventCount를 2로 나눕니다)
-    return eventCount / 2;
+
+    pinMode(PWM_PIN18, PWM_OUTPUT);
+    pinMode(PWM_PIN12, PWM_OUTPUT);
+    pinMode(PWM_PIN13, PWM_OUTPUT);
+    pinMode(PWM_PIN19, PWM_OUTPUT);
+    pinMode(INPUT_PIN, INPUT);
+
+    pwmSetMode(PWM_MODE_MS);
+    pwmSetRange(128);
+    pwmSetClock(32);
+}
+
+void logPWMInput() {
+    int value;
+    int highCount = 0;
+    int lowCount = 0;
+    int totalCount = 128; // 측정할 샘플 수
+
+    for (int i = 0; i < totalCount; i++) {
+        value = digitalRead(INPUT_PIN);
+
+        if (value == HIGH) {
+            highCount++;
+        } else {
+            lowCount++;
+        }
+
+        delayMicroseconds(100); // 100us마다 샘플링
+    }
+
+    printf("HIGH Count: %d, LOW Count: %d\n", highCount, lowCount);
+    printf("HIGH Percentage: %.2f%%, LOW Percentage: %.2f%%\n",
+           (highCount / (float)totalCount) * 100,
+           (lowCount / (float)totalCount) * 100);
 }
 
 int main(void) {
-    if (wiringPiSetupGpio() == -1) {
-        fprintf(stderr, "Failed to initialize wiringPi\n");
-        return 1;
-    }
-    printf("PWM Test Start\n");
-    pinMode(GPIO_PIN, INPUT);
-    pinMode(4, OUTPUT);
-    softPwmCreate(4, 0, 100); // pwmRange
-    int cnt = 0;
-    for(int i = 0; i < 5; i++){
-        softPwmWrite(4, i); // value
-        int frequency = measureFrequency(4); // value / pwmRange = dutycylce
-        printf("Measured Frequency: %d Hz\n", frequency);
-        if(i == 0 && frequency != 0) continue;
-        if(frequency != 0) cnt++;
-        delay(1000);  // 1초 대기
-        
-    }
-    if(cnt > 3) printf("Success\n");
-    else printf("Failed\n");
-    printf("PWM Finshed\n");
-    //printf("%d", cnt);
-  
+    setup();
+    for (int i = 0; i < 128; i++) {
+    pwmWrite(PWM_PIN13, i); // 50% duty cycle
+    printf("input value : %d\n", i);
+    
+    logPWMInput();
+    sleep(1); // 1초마다 로그 출력
+}
 
     return 0;
 }
