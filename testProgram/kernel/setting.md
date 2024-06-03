@@ -129,8 +129,8 @@ fi
 # 커널 로그 확인
 dmesg | tail -n 10
 
-# 5초 대기 후 모듈 언로드
-sleep 5
+# 20초 대기 후 모듈 언로드
+sleep 20
 sudo rmmod ${MODULE_NAME}
 
 # 언로드 확인
