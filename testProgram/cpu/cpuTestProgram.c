@@ -26,7 +26,6 @@ void cpuNumCheck()
 	FILE *cpuinfo = popen("grep processor /proc/cpuinfo | wc -l", "r");
 	FILE *modelname = popen("grep Model /proc/cpuinfo", "r");
 	FILE *lscpu = popen("lscpu | grep 'CPU'", "r");
-	FILE *lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
 
 	if (cpuinfo == NULL || modelname == NULL || lscpu == NULL || lsmem == NULL)
 	{
@@ -39,7 +38,7 @@ void cpuNumCheck()
 		int mem_avail = atoi(buffer);
 		if (mem_avail > 0)
 		{
-			printf(GREEN "    [+] Memory access Okay\n" RESET);
+			printf("    [+] Memory access Okay\n");
 		}
 	}
 
@@ -68,9 +67,7 @@ void cpuNumCheck()
 	pclose(cpuinfo);
 	pclose(modelname);
 	pclose(lscpu);
-	pclose(lsmem);
-
-	}
+}
 
 void cpuPerformCheck()
 {
@@ -90,7 +87,7 @@ void cpuPerformCheck()
 		if((ptr = strstr(buffer, "events per second")) != NULL)
 		{
 			sscanf(ptr, "events per second: %lf", &cpuSpeed);
-			printf(GREEN "    [+] events per second: %.2lf\n" RESET, cpuSpeed);
+			printf("    [+] events per second: %.2lf\n" cpuSpeed);
 		}
 	}
 	if(cpuSpeed >= 2000) funcCheck[1] = 2;
