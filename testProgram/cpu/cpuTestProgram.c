@@ -14,9 +14,9 @@
 
 double timeCheck()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (double) ts.tv_sec + (double) ts.tv_nsec * 1.e-6;
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6;
 }
 
 void cpuNumCheck()
@@ -31,37 +31,44 @@ void cpuNumCheck()
 		printf(RED "    [!] CPU is not run" RESET);
 		exit(-1);
 	}
-    char buffer[BUFFER_SIZE];
-    if (fgets(buffer, sizeof(buffer), lsmem) != NULL)
-    {
-        int mem_avail = atoi(buffer);
-        if (mem_avail > 0)
+	char buffer[BUFFER_SIZE];
+	if (fgets(buffer, sizeof(buffer), lsmem) != NULL)
+	{
+		int mem_avail = atoi(buffer);
+		if (mem_avail > 0)
 		{
-            printf(GREEN "    [+] Memory access Okay\n" RESET);
-        }
-    }
+			printf(GREEN "    [+] Memory access Okay\n" RESET);
+		}
+	}
 
-    if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
-    {
-        int num_processors = atoi(buffer);
-        printf(GREEN "    [+] Number of processors: %d\n" RESET, num_processors);
-        if (num_processors == 4)
+	if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
+	{
+		int num_processors = atoi(buffer);
+		printf("    [+] Number of processors: %d\n", num_processors);
+		if (num_processors == 4)
 		{
-            printf(GREEN "    [+] Processor is alright\n" RESET);
-        }
-    }
+			printf("    [+] Processor is alright\n");
+			funcCheck[0] = 2;
+		}
+		else
+		{
+			printf("    [!] Processor number: %d\n", num_processors);
+			funcCheck[0] = 0;
+		}
+	}
 	else
 	{
-        printf(RED "    [!] Failed to read output\n" RESET);
-        exit(-1);
-    }
+		printf(RED "    [!] Failed to read output\n" RESET);
+		funcCheck[0] = 0;
+		exit(-1);
+	}
 
-    pclose(cpuinfo);
-    pclose(modelname);
-    pclose(lscpu);
-    pclose(lsmem);
+	pclose(cpuinfo);
+	pclose(modelname);
+	pclose(lscpu);
+	pclose(lsmem);
 
-}
+	}
 
 void cpuPerformCheck()
 {
@@ -84,16 +91,18 @@ void cpuPerformCheck()
 			printf(GREEN "    [+] events per second: %.2lf\n" RESET, cpuSpeed);
 		}
 	}
+	if(cpuSpeed >= 2000) funcCheck[1] = 2;
+	else if(cpuSpeed >= 500) funcCheck[1] = 1;
+	else funcCheck[1] = 0;
 
 	pclose(fp);
-	
 }
 
 void cpuIPSCheck()
 {
 	clock_t start, end;
 	double cpu_time;
-	long long int instructions = 83665486191;
+	long long int instructions = 10006964235;
 	int loop = 1000000000;
 	double result = 0.0;
 
@@ -101,38 +110,83 @@ void cpuIPSCheck()
 	for(int i=0;i<loop;i++){}
 	end = timeCheck();
 
-	cpu_time = (end-start);
+	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
 	result = instructions / cpu_time;
 	result /= 1000000000;
 
 	printf("    [+] IPS: %.2lf GIPS\n", result);
+
+	if(result >= 1.0) funcCheck[2] = 2;
+	else if(result >= 0.5) funcCheck[2] = 1;
+	else funcCheck[2] = 0;
 }
 
 void cpuFPCheck()
 {
-	double start, end;
+	double a = 1.1, b = 2.2, c = 3.3;
+	long num = 100000000;
+	clock_t start, end;
+	double cpu_time, result = 0.0;
 
-    double a = 1.234567, b = 9.87654;
-    double c, sum = 0.0;
+	start = timeCheck();
+	for(long i = 1;i<num;i++)
+	{
+		result += sin(a) * cos(b) / tan(c);
+		result += log(a) * exp(b) / sqrt(c);
+		a += 0.1;
+		b += 0.1;
+		c += 0.1;
+	}
+	end = timeCheck();
 
-    long long num = 1000000000;
+	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
 
-    start = timeCheck();
+	double flops = num / cpu_time;
+	flops /= 1000;
 
-    for(long long i = 0; i < num; i++)
-    {
-        c = a * b;
-        sum += c;
-    }
+	printf("    [+] FLOPS: %.2lf MFLOPS\n", flops);
 
-    end = timeCheck();
+	if(flops >= 24) funcCheck[3] = 2;
+	else if(flops >= 18) funcCheck[3] = 1;
+	else funcCheck[3] = 0;
+}
 
-    double time_stemp = end - start;
+char* getColor(int check)
+{
+	if(check == 0) return RED;
+	else if(check == 1) return YELLOW;
+	else return GREEN;
+}
 
-    double flops = (num * 3.0) / time_stemp / 1e6;
+char* getResult(int check)
+{
+	if(check == 0) return "FAIL";
+	else if(check == 1) return "WARN";
+	else return "PASS";
+}
 
-	printf("    [+] FLOPS: %.2lf GFLOPS\n", flops);
-}	
+void printSummary()
+{
+	char *color;
+	char *result;
+
+	printf("=======================================================\n\n");
+	printf(" Index  Test discription                        Result \n\n");
+	printf("=======================================================\n\n");
+
+	for(int i=0;i<4;i++)
+	{
+			if(i == 0) printf("     %d. CPU,Processor                            ", i);
+			else if(i == 1) printf("     %d. CPU Performance                          ", i);
+			else if(i == 2) printf("     %d. CPU IPS                                  ", i);
+			else if(i == 3) printf("     %d. CPU Floating Point                       ", i);
+			color = getColor(funcCheck[i]);
+			result = getResult(funcCheck[i]);
+			printf("%s%s%s\n\n", color, result, RESET);
+	}
+
+	printf("################### Finish Iteration ##################\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -147,9 +201,10 @@ int main(int argc, char **argv)
 
 	printf("[+] CPU Floating Point Check\n");
 	cpuFPCheck();
-	
+
 	printf("[+] CPU Clear\n");
 
-	return 0;
+	printSummary();
 
+	return 0;
 }
