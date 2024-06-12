@@ -9,6 +9,7 @@
 
 #define BUFFER_SIZE 1024
 #define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
 #define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 
@@ -27,20 +28,12 @@ void cpuNumCheck()
 	FILE *modelname = popen("grep Model /proc/cpuinfo", "r");
 	FILE *lscpu = popen("lscpu | grep 'CPU'", "r");
 
-	if (cpuinfo == NULL || modelname == NULL || lscpu == NULL || lsmem == NULL)
+	if (cpuinfo == NULL || modelname == NULL || lscpu == NULL)
 	{
 		printf(RED "    [!] CPU is not run" RESET);
 		exit(-1);
 	}
 	char buffer[BUFFER_SIZE];
-	if (fgets(buffer, sizeof(buffer), lsmem) != NULL)
-	{
-		int mem_avail = atoi(buffer);
-		if (mem_avail > 0)
-		{
-			printf("    [+] Memory access Okay\n");
-		}
-	}
 
 	if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
 	{
@@ -87,7 +80,7 @@ void cpuPerformCheck()
 		if((ptr = strstr(buffer, "events per second")) != NULL)
 		{
 			sscanf(ptr, "events per second: %lf", &cpuSpeed);
-			printf("    [+] events per second: %.2lf\n" cpuSpeed);
+			printf("    [+] events per second: %.2lf\n", cpuSpeed);
 		}
 	}
 	if(cpuSpeed >= 2000) funcCheck[1] = 2;
@@ -122,32 +115,32 @@ void cpuIPSCheck()
 
 void cpuFPCheck()
 {
-	double a = 1.1, b = 2.2, c = 3.3;
-	long num = 100000000;
-	clock_t start, end;
-	double cpu_time, result = 0.0;
+        double start, end;
 
-	start = timeCheck();
-	for(long i = 1;i<num;i++)
-	{
-		result += sin(a) * cos(b) / tan(c);
-		result += log(a) * exp(b) / sqrt(c);
-		a += 0.1;
-		b += 0.1;
-		c += 0.1;
-	}
-	end = timeCheck();
+    double a = 1.234567, b = 9.87654;
+    double c, sum = 0.0;
 
-	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+    long long num = 1000000000;
 
-	double flops = num / cpu_time;
-	flops /= 1000;
+    start = timeCheck();
 
-	printf("    [+] FLOPS: %.2lf MFLOPS\n", flops);
+    for(long long i = 0; i < num; i++)
+    {
+        c = a * b;
+        sum += c;
+    }
 
-	if(flops >= 24) funcCheck[3] = 2;
-	else if(flops >= 18) funcCheck[3] = 1;
-	else funcCheck[3] = 0;
+    end = timeCheck();
+
+    double time_stemp = end - start;
+
+    double flops = (num * 3.0) / time_stemp / 1e6;
+
+        printf("    [+] FLOPS: %.2lf GFLOPS\n", flops);
+
+        if(flops >= 24) funcCheck[3] = 2;
+        else if(flops >= 18) funcCheck[3] = 1;
+        else funcCheck[3] = 0;
 }
 
 char* getColor(int check)
