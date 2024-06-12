@@ -14,9 +14,9 @@
 
 double timeCheck()
 {
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    return (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double) ts.tv_sec + (double) ts.tv_nsec * 1.e-6;
 }
 
 void cpuNumCheck()
@@ -93,7 +93,7 @@ void cpuIPSCheck()
 {
 	clock_t start, end;
 	double cpu_time;
-	long long int instructions = 10006964235;
+	long long int instructions = 83665486191;
 	int loop = 1000000000;
 	double result = 0.0;
 
@@ -101,7 +101,7 @@ void cpuIPSCheck()
 	for(int i=0;i<loop;i++){}
 	end = timeCheck();
 
-	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+	cpu_time = (end-start);
 	result = instructions / cpu_time;
 	result /= 1000000000;
 
@@ -110,28 +110,28 @@ void cpuIPSCheck()
 
 void cpuFPCheck()
 {
-	double a = 1.1, b = 2.2, c = 3.3;
-	long num = 100000000;
-	clock_t start, end;
-	double cpu_time, result = 0.0;
+	double start, end;
 
-	start = timeCheck();
-	for(long i = 1;i<num;i++)
+    double a = 1.234567, b = 9.87654;
+    double c, sum = 0.0;
+
+    long long num = 1000000000;
+
+    start = timeCheck();
+
+    for(long long i = 0; i < num; i++)
     {
-		result += sin(a) * cos(b) / tan(c);
-		result += log(a) * exp(b) / sqrt(c);
-		a += 0.1;
-		b += 0.1;
-		c += 0.1;
-	}
-	end = timeCheck();
+        c = a * b;
+        sum += c;
+    }
 
-	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+    end = timeCheck();
 
-	double flops = num / cpu_time;
-	flops /= 1000;
+    double time_stemp = end - start;
 
-	printf("    [+] FLOPS: %.2lf MFLOPS\n", flops);
+    double flops = (num * 3.0) / time_stemp / 1e6;
+
+	printf("    [+] FLOPS: %.2lf GFLOPS\n", flops);
 }	
 
 int main(int argc, char **argv)

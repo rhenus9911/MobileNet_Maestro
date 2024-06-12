@@ -157,7 +157,7 @@ void memoryErrorCheck()
     {
         if(memory[i] != p)
         {
-            printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+               printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
             exit(-1);
         }
     }
