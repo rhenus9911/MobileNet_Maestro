@@ -18,6 +18,8 @@
 #define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 
+double *array;
+
 static double a[STREAM_ARRAY_SIZE];
 static double b[STREAM_ARRAY_SIZE];
 
@@ -25,9 +27,9 @@ int funcCheck[4] = {0};
 
 double timeCheck()
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (double) ts.tv_sec + (double) ts.tv_nsec * 1.e-6;
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6;
 }
 
 void memoryFuncCheck()
@@ -71,7 +73,7 @@ void memoryFuncCheck()
     pclose(lsmem);
 }
 
-void readBandWidth(double *array)
+void readBandWidth()
 {
     volatile double value;
     for(size_t i=0;i<STREAM_ARRAY_SIZE;i++)
@@ -80,7 +82,7 @@ void readBandWidth(double *array)
     }
 }
 
-void writeBandWidth(double *array)
+void writeBandWidth()
 {
     for(size_t i=0;i<STREAM_ARRAY_SIZE;i++)
     {
@@ -101,8 +103,7 @@ void memoryBandWidthCheck()
     double times[3][NTIMES];
     double avg_t[3], min_t[3], max_t[3], best_rate[3];
     array = (double *)malloc(STREAM_ARRAY_SIZE * sizeof(double));
-    printf("[+]Memory BandWitch Check\n");
-
+    
     for(int k=0;k<STREAM_ARRAY_SIZE;k++)
     {
         a[k] = 1.0;
@@ -155,8 +156,8 @@ void memoryBandWidthCheck()
     printf("Read:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[1], avg_t[1], min_t[1], max_t[1]);
     printf("Write:  %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[2], avg_t[2], min_t[2], max_t[2]);
 
-    if(avg_t[0] >= 4000 && avg_t[1] >= 1600 && avg_t[2] >= 1500) funcCheck[2] = 2;
-    else if(avg_t[0] < 4000 && avg_t[1] < 1600 && avg_t[2] < 1500) funcCheck[2] = 0;
+    if(best_rate[1] >= 4000 && best_rate[2] >= 1600 && best_rate[0] >= 1500) funcCheck[2] = 2;
+    else if(best_rate[1] < 4000 && best_rate[2] < 1600 && best_rate[0] < 1500) funcCheck[2] = 0;
     else funcCheck[2] = 1;
     
     free(array);
@@ -230,17 +231,17 @@ void printSummary()
 int main(int argc, char **argv)
 {
     printf("[+] Memory Function Check\n");
-    //memoryFuncCheck();
+    memoryFuncCheck();
 
     printf("[+] Memory BandWidth Check\n");
     memoryBandWidthCheck();
 
     printf("[+] Memory Error Check\n");
-    //memoryErrorCheck();
+    memoryErrorCheck();
 
     printf("[+] Memory Clear\n");
 
-    //printSummary();
+    printSummary();
     return 0;
 }
 
