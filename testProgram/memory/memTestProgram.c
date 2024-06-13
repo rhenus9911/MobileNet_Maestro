@@ -96,43 +96,6 @@ void copyBandWidth()
     }
 }
 
-char* getColor(int check)
-{
-    if(check == 0) return RED;
-    else if(check == 1) return YELLOW;
-    else return GREEN;
-}
-
-char* getResult(int check)
-{
-    if(check == 0) return "FAIL";
-    else if(check == 1) return "WARN";
-    else return "PASS";
-}
-
-void printSummary()
-{
-    char *color;
-    char *result;
-
-    printf("=======================================================\n\n");
-    printf(" Index  Test discription                        Result \n\n");
-    printf("=======================================================\n\n");
-
-    for(int i=0;i<4;i++)
-    {
-        if(i == 0) printf("     %d. Memory                                   ", i);
-        else if(i == 1) printf("     %d. Memory Performance                       ", i);
-        else if(i == 2) printf("     %d. Memory BandWidth                         ", i);
-        else if(i == 3) printf("     %d. Memory R/W                               ", i);
-        color = getColor(funcCheck[i]);
-        result = getResult(funcCheck[i]);
-        printf("%s%s%s\n\n", color, result, RESET);
-    }
-
-    printf("################### Finish Iteration ##################\n");
-}
-
 void memoryBandWidthCheck()
 {
     double times[3][NTIMES];
@@ -197,6 +160,43 @@ void memoryBandWidthCheck()
     else funcCheck[2] = 1;
     
     free(array);
+}
+
+char* getColor(int check)
+{
+    if(check == 0) return RED;
+    else if(check == 1) return YELLOW;
+    else return GREEN;
+}
+
+char* getResult(int check)
+{
+    if(check == 0) return "FAIL";
+    else if(check == 1) return "WARN";
+    else return "PASS";
+}
+
+void printSummary()
+{
+    char *color;
+    char *result;
+
+    printf("=======================================================\n\n");
+    printf(" Index  Test discription                        Result \n\n");
+    printf("=======================================================\n\n");
+
+    for(int i=0;i<4;i++)
+    {
+        if(i == 0) printf("     %d. Memory                                   ", i);
+        else if(i == 1) printf("     %d. Memory Performance                       ", i);
+        else if(i == 2) printf("     %d. Memory BandWidth                         ", i);
+        else if(i == 3) printf("     %d. Memory R/W                               ", i);
+        color = getColor(funcCheck[i]);
+        result = getResult(funcCheck[i]);
+        printf("%s%s%s\n\n", color, result, RESET);
+    }
+
+    printf("################### Finish Iteration ##################\n");
 }
 
 void memoryErrorCheck()
