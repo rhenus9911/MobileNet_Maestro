@@ -49,7 +49,6 @@ void memoryFuncCheck()
         printf("    [+] Memory is Access\n");
         funcCheck[0] = 2;
     }
-    }
     while(fgets(buffer, sizeof(buffer), fp) != NULL)
     {
         if((ptr = strstr(buffer, "Total operations")) != NULL)
