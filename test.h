@@ -36,6 +36,3 @@ void ping_test(const char* ip_address);
 void iperf_test(const char* server_ip);
 int EthernetTest();
 int bluetoothTest();
-
-
-
