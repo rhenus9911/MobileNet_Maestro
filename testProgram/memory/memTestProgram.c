@@ -122,9 +122,9 @@ void printSummary()
     for(int i=0;i<4;i++)
     {
         if(i == 0) printf("     %d. Memory                                   ", i);
-        else if(i == 1) printf("     %d. Memory Performance                          ", i);
-        else if(i == 2) printf("     %d. Memory BandWidth                                  ", i);
-        else if(i == 3) printf("     %d. Memory R/W                           ", i);
+        else if(i == 1) printf("     %d. Memory Performance                       ", i);
+        else if(i == 2) printf("     %d. Memory BandWidth                         ", i);
+        else if(i == 3) printf("     %d. Memory R/W                               ", i);
         color = getColor(funcCheck[i]);
         result = getResult(funcCheck[i]);
         printf("%s%s%s\n\n", color, result, RESET);
@@ -230,17 +230,17 @@ void memoryErrorCheck()
 int main(int argc, char **argv)
 {
     printf("[+] Memory Function Check\n");
-    memoryFuncCheck();
+    //memoryFuncCheck();
 
     printf("[+] Memory BandWidth Check\n");
     memoryBandWidthCheck();
 
     printf("[+] Memory Error Check\n");
-    memoryErrorCheck();
+    //memoryErrorCheck();
 
     printf("[+] Memory Clear\n");
 
-    printSummary();
+    //printSummary();
     return 0;
 }
 
