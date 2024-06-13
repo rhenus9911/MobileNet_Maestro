@@ -162,6 +162,34 @@ void memoryBandWidthCheck()
     free(array);
 }
 
+void memoryErrorCheck()
+{
+    uint8_t p = 0xAA;
+    uint8_t *memory = (uint8_t *)malloc(BUFFER_SIZE * sizeof(uint8_t));
+    if(!memory)
+    {
+        printf("    [!] Memory allocation failed\n");
+        exit(-1);   
+    }
+
+    for(size_t i=0;i<BUFFER_SIZE;i++)
+    {
+        memory[i] = p;
+    }
+
+    for(size_t i=0;i<BUFFER_SIZE;i++)
+    {
+        if(memory[i] != p)
+        {
+            printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+            funcCheck[3] = 0;
+            exit(-1);
+        }
+    }
+
+    funcCheck[3] = 2;
+}
+
 char* getColor(int check)
 {
     if(check == 0) return RED;
@@ -197,34 +225,6 @@ void printSummary()
     }
 
     printf("################### Finish Iteration ##################\n");
-}
-
-void memoryErrorCheck()
-{
-    uint8_t p = 0xAA;
-    uint8_t *memory = (uint8_t *)malloc(BUFFER_SIZE * sizeof(uint8_t));
-    if(!memory)
-    {
-        printf("    [!] Memory allocation failed\n");
-        exit(-1);   
-    }
-
-    for(size_t i=0;i<BUFFER_SIZE;i++)
-    {
-        memory[i] = p;
-    }
-
-    for(size_t i=0;i<BUFFER_SIZE;i++)
-    {
-        if(memory[i] != p)
-        {
-            printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
-            funcCheck[3] = 0;
-            exit(-1);
-        }
-    }
-
-    funcCheck[3] = 2;
 }
 
 int main(int argc, char **argv)
