@@ -15,16 +15,19 @@
 
 #define RED "\033[0;31m"
 #define GREEN "\033[0;32m"
+#define YELLOW "\033[0;33m"
 #define RESET "\033[0m"
 
 static double a[STREAM_ARRAY_SIZE];
 static double b[STREAM_ARRAY_SIZE];
 
+int funcCheck[4] = {0};
+
 double timeCheck()
 {
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    return (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double) ts.tv_sec + (double) ts.tv_nsec * 1.e-6;
 }
 
 void memoryFuncCheck()
@@ -34,22 +37,39 @@ void memoryFuncCheck()
     double oper;
     double trans;
 
+    FILE *lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
     FILE *fp = popen("sysbench memory --threads=4 run", "r");
+    if(lsmem == NULL)
+    {
+        printf(RED "    [!] Memory is not Access\n" RESET);
+        exit(-1);
+    }
+    else
+    {
+        printf("    [+] Memory is Access\n");
+        funcCheck[0] = 2;
+    }
+    }
     while(fgets(buffer, sizeof(buffer), fp) != NULL)
     {
         if((ptr = strstr(buffer, "Total operations")) != NULL)
         {
             sscanf(ptr, "Total operations: %lf", &oper);
-            printf(GREEN "    [+] Total operations: %.2lf\n" RESET, oper);
+            printf("    [+] Total operations: %.2lf\n", oper);
         }
         else if((ptr = strstr(buffer, "transferred")) != NULL)
         {
             sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-            printf(GREEN "    [+] MiB Transferred: %.2lf MiB/sec\n" RESET, trans);
+            printf("    [+] MiB Transferred: %.2lf MiB/sec\n", trans);
         }
     }
 
+    if(oper >= 20000000.0) funcCheck[1] = 2;
+    else if(oper >= 5000000) funcCheck[1] = 1;
+    else funcCheck[1] = 0;
+
     pclose(fp);
+    pclose(lsmem);
 }
 
 void readBandWidth(double *array)
@@ -75,6 +95,29 @@ void copyBandWidth()
     {
         b[i] = a[i];
     }
+}
+
+void printSummary()
+{
+    char *color;
+    char *result;
+
+    printf("=======================================================\n\n");
+    printf(" Index  Test discription                        Result \n\n");
+    printf("=======================================================\n\n");
+
+    for(int i=0;i<4;i++)
+    {
+        if(i == 0) printf("     %d. Memory                                   ", i);
+        else if(i == 1) printf("     %d. Memory Performance                          ", i);
+        else if(i == 2) printf("     %d. Memory BandWidth                                  ", i);
+        else if(i == 3) printf("     %d. Memory R/W                           ", i);
+        color = getColor(funcCheck[i]);
+        result = getResult(funcCheck[i]);
+        printf("%s%s%s\n\n", color, result, RESET);
+    }
+
+    printf("################### Finish Iteration ##################\n");
 }
 
 void memoryBandWidthCheck()
@@ -134,6 +177,10 @@ void memoryBandWidthCheck()
     printf("    Read:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[0], avg_t[0], min_t[0], max_t[0]);
     printf("    Write:  %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[1], avg_t[1], min_t[1], max_t[1]);
     printf("    Copy:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[2], avg_t[2], min_t[2], max_t[2]);
+
+    if(avg_t[0] >= 4000 && avg_t[1] >= 1600 && avg_t[2] >= 1500) funcCheck[2] = 2;
+    else if(avg_t[0] < 4000 && avg_t[1] < 1600 && avg_t[2] < 1500) funcCheck[2] = 0;
+    else funcCheck[2] = 1;
     
     free(array);
 }
@@ -157,10 +204,13 @@ void memoryErrorCheck()
     {
         if(memory[i] != p)
         {
-               printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+            printf("    [!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+            funcCheck[3] = 0;
             exit(-1);
         }
     }
+
+    funcCheck[3] = 2;
 }
 
 int main(int argc, char **argv)
@@ -175,6 +225,8 @@ int main(int argc, char **argv)
     memoryErrorCheck();
 
     printf("[+] Memory Clear\n");
+
+    printSummary();
     return 0;
 }
 
