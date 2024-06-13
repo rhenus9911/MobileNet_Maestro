@@ -97,6 +97,20 @@ void copyBandWidth()
     }
 }
 
+char* getColor(int check)
+{
+    if(check == 0) return RED;
+    else if(check == 1) return YELLOW;
+    else return GREEN;
+}
+
+char* getResult(int check)
+{
+    if(check == 0) return "FAIL";
+    else if(check == 1) return "WARN";
+    else return "PASS";
+}
+
 void printSummary()
 {
     char *color;

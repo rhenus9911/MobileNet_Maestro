@@ -90,6 +90,7 @@ void cpuPerformCheck()
    else funcCheck[1] = 0;
    
    pclose(fp);
+}
 
 void cpuIPSCheck()
 {
@@ -143,6 +144,7 @@ void cpuFPCheck()
     if(flops >= 24) funcCheck[3] = 2;
     else if(flops >= 18) funcCheck[3] = 1;
     else funcCheck[3] = 0;
+}
 
 char* getColor(int check)
 {
