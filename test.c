@@ -228,7 +228,7 @@ int PWMTest() {
     setup();
     int n;
      pwmWrite(PWM_PIN13, 50); // 50% duty cycle
-     printf("input value : %d\n", i);
+     printf("input value : %d\n", 50);
      n = logPWMInput();
      sleep(1); // 1초마다 로그 출력
      if (n >= 49.5 && n <= 50.5) {
@@ -256,7 +256,7 @@ int spi_loopback_test(int channel) {
     // SPI로 데이터 전송 및 수신
     if (wiringPiSPIDataRW(channel, data, DATA_LENGTH) == -1) {
         printf("SPI communication failed on channel %d!\n", channel);
-        return;
+        return 0;
     }
 
 
@@ -336,7 +336,7 @@ int wifiTest() {
     fp = popen("iwconfig 2>&1", "r");
     if (fp == NULL) {
         printf("Failed to run iwconfig\n");
-        return;
+        return 0;
     }
 
     // 명령 출력을 버퍼에 저장
@@ -525,5 +525,3 @@ int bluetoothTest() {
     free(ii);
     close(sock);
 }
-
-
