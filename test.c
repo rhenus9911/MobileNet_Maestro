@@ -6,6 +6,7 @@
 #include <string.h>
 #include <wiringPiSPI.h>
 #include <wiringPi.h>
+#include <wiringPiI2C.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
@@ -15,6 +16,12 @@
 #include <bluetooth/hci_lib.h>
 #include <bluetooth/rfcomm.h>
 #include <sys/socket.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <sys/time.h>
+#include <time.h>
+#include <math.h>
+
 #define GPIO_BASE 0xfe200000
 #define GPFSEL0 0x00
 #define GPSET0 0x1c
@@ -36,150 +43,44 @@
 #define SPI_SPEED 500000 // SPI 속도 (500kHz)
 #define DATA_LENGTH 10
 #define BUFFER_SIZE 1024
+#define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
+#define YELLOW "\033[0;33m"
+#define RESET "\033[0m"
+
+#define BUFFER_SIZE 1024
+#define STREAM_ARRAY_SIZE 100000000
+#define NTIMES 20
+
+int funcCheck[5] = { 0 };
+
+double* array;
+static double a[STREAM_ARRAY_SIZE];
+static double b[STREAM_ARRAY_SIZE];
 
 
 int GpioTest() {
-    int fd;
-    if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0)
-    {
-        perror("[Error] open() : ");
-        exit(-1);
-    }
-
-    //메모리장치파일에 가상메모리를 할당하는 작업
-    //mmap은 가상메모리주소를 반환, 유저영역에선 물리주소를 알아도 가상주소로 변환해야지만 
-    char* gpio_base_addr = (char*)mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO_BASE);
-    if (gpio_base_addr == MAP_FAILED)
-    {
-        perror("[Error] mmap() : ");
-        exit(-1);
-    }
-
-    volatile unsigned int* gpio_virtual_addr;
-    volatile unsigned int* gpfsel0; // input output
-    volatile unsigned int* gpfsel1; // input output
-    volatile unsigned int* gpfsel2; // input output
-    //volatile unsigned int *gpfsel3; // input output
-    volatile unsigned int* gpset0;
-    //volatile unsigned int *gpset1;
-    volatile unsigned int* gpclr0;
-    //volatile unsigned int *gpclr1;
-    volatile unsigned int* gplev0;
-    //volatile unsigned int *gplev1;
-    gpio_virtual_addr = (volatile unsigned int*)gpio_base_addr;
-    gpfsel0 = gpio_virtual_addr + (GPFSEL0 / 4);
-    gpfsel1 = gpio_virtual_addr + (GPFSEL1 / 4);
-    gpfsel2 = gpio_virtual_addr + (GPFSEL2 / 4);
-    //gpfsel3 = gpio_virtual_addr + (GPFSEL3/4);
-    gpset0 = gpio_virtual_addr + (GPSET0 / 4);
-    //gpset1 = gpio_virtual_addr + (GPSET1/4);
-    gpclr0 = gpio_virtual_addr + (GPCLR0 / 4);
-    //gpclr1 = gpio_virtual_addr + (GPCLR1/4);
-    gplev0 = gpio_virtual_addr + (GPLEV0 / 4);
-    //gplev1 = gpio_virtual_addr + (GPLEV1/4);
-
-    //int k = 9;
-    //*gpfsel0 |= (0<<11);
-    //*gpfsel0 |= (0<<10);
-    //*gpfsel0 |= (1<<k); // 21 23
-    //*gpfsel1 |= (0<<11);
-    //*gpfsel1 |= (0<<10);
-    //*gpfsel1 |= (1<<9);
-    //*gpfsel3 |= (0<<14);
-    //*gpfsel3 |= (0<<13);
-    //*gpfsel3 |= (1<<12);
-    //*gpclr0 |= (1 << 3);
-    unsigned int pin;
-    //printf("%d", pin);
-    int k = 0;
-    int check = 0;
-    for (int i = 0; i < 1; i++) {
-        for (int j = 0; j < 27; j++) {
-            if (j < 10) {
-                *gpfsel0 |= (1 << k);
-                *gpset0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (!pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpclr0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpfsel0 &= 0;
-                *gpset0 &= 0;
-                *gpclr0 &= 0;
-                k += 3;
-            }
-            else if (j < 20) {
-                if (j == 10) k = 0;
-                *gpfsel1 |= (1 << k);
-                *gpset0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (!pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpclr0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpfsel1 &= 0;
-                *gpset0 &= 0;
-                *gpclr0 &= 0;
-                k += 3;
-            }
-            else {
-                if (j == 20) k = 0;
-                *gpfsel2 |= (1 << k);
-                *gpset0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (!pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpclr0 |= (1 << j);
-                pin = (*gplev0 >> j) & 1;
-                if (pin) {
-                    printf("%d, ", j);
-                    check = 1;
-                }
-                sleep(1);
-                *gpfsel2 &= 0;
-                *gpset0 &= 0;
-                *gpclr0 &= 0;
-                //if(j == 25) k -= 6; // failed test  
-                k += 3;
-            }
-        }
-
-    }
-    if (check) {
-        printf("\033[31mGpio Failed\033[0m\n");
-        return 0;
-    }
-    else {
-        printf("\033[32mGpio Success\033[0m\n");
+    // wiringPi 초기화
+    if (wiringPiSetup() == -1) {
+        printf("wiringPi setup failed!\n");
         return 1;
     }
-    //printf("gpio base virtual addr : %p\n", gpio_virtual_addr);
-    //printf("gpfsel0 virtual addr : %p\n", gpfsel0);
-    //printf("gpset0 virtual addr : %p\n", gpset0);
-    //printf("gpclr0 virtual addr : %p\n", gpclr0);
-
-    munmap(gpio_base_addr, 4096);
-    close(fd);
-	
+    int pins[17] = { 7, 0, 2, 3, 21, 22, 23, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
+    int check = 1;
+    for (int i = 0; i < 17; i++) {
+        pinMode(pins[i], OUTPUT);
+        digitalWrite(pins[i], HIGH);
+        usleep(300000); // 0.3초 대기
+        if (digitalRead(pins[i]) == LOW) {
+            printf("\033[31mGPIO %d failed\033[0m\n", pins[i]);
+            check = 0;
+        }
+        digitalWrite(pins[i], LOW);
+        usleep(300000); // 0.3초 대기
+    }
+    printf("GPIO test completed.\n");
+    if (check == 1) return 1;
+    else return 0;
 }
 
 void setup() {
@@ -195,14 +96,14 @@ void setup() {
     pinMode(INPUT_PIN, INPUT);
 
     pwmSetMode(PWM_MODE_MS);
-    pwmSetRange(128);
+    pwmSetRange(1024);
     pwmSetClock(32);
 }
-int logPWMInput() {
+double logPWMInput() {
     int value;
     int highCount = 0;
     int lowCount = 0;
-    int totalCount = 128; // 측정할 샘플 수
+    int totalCount = 1024; // 측정할 샘플 수
 
     for (int i = 0; i < totalCount; i++) {
         value = digitalRead(INPUT_PIN);
@@ -226,19 +127,62 @@ int logPWMInput() {
 
 int PWMTest() {
     setup();
-    int n;
-     pwmWrite(PWM_PIN13, 50); // 50% duty cycle
-     printf("input value : %d\n", 50);
-     n = logPWMInput();
-     sleep(1); // 1초마다 로그 출력
-     if (n >= 49.5 && n <= 50.5) {
-         printf("\033[32mPWM Success\033[0m\n");
-         return 1;
+    double  n;
+    int check = 0;
+    printf("GPIO12 PWM Test\n");
+    pwmWrite(PWM_PIN12, 512);
+    printf("input value : %d\n", 512);
+    n = logPWMInput();
+    if (n >= 49 && n <= 51) {
+        printf("\033[32mPWM Success\033[0m\n");
     }
-     else {
-         printf("\033[31mPWM Failed\033[0m\n");
-         return 0;
-     }
+    else {
+        printf("\033[31mPWM Failed\033[0m\n");
+        check = 1;
+    }
+    sleep(1); // 1초마다 로그 출력
+
+    printf("GPIO13 PWM Test\n");
+    pwmWrite(PWM_PIN13, 512);
+    printf("input value : %d\n", 512);
+    n = logPWMInput();
+    if (n >= 49 && n <= 51) {
+        printf("\033[32mPWM Success\033[0m\n");
+    }
+    else {
+        printf("\033[31mPWM Failed\033[0m\n");
+        check = 1;
+    }
+    sleep(1); // 1초마다 로그 출력
+
+    printf("GPIO18 PWM Test\n");
+    pwmWrite(PWM_PIN18, 512);
+    printf("input value : %d\n", 512);
+    n = logPWMInput();
+    if (n >= 49 && n <= 51) {
+        printf("\033[32mPWM Success\033[0m\n");
+    }
+    else {
+        printf("\033[31mPWM Failed\033[0m\n");
+        check = 1;
+    }
+    sleep(1); // 1초마다 로그 출력
+    printf("GPIO19 PWM Test\n");
+    pwmWrite(PWM_PIN19, 512);
+    printf("input value : %d\n", 512);
+    n = logPWMInput();
+    if (n >= 49 && n <= 51) {
+        printf("\033[32mPWM Success\033[0m\n");
+    }
+    else {
+        printf("\033[31mPWM Failed\033[0m\n");
+        check = 1;
+    }
+    sleep(1); // 1초마다 로그 출력
+
+
+    if (check == 1) return 0;
+    else return 1;
 }
 
 int spi_loopback_test(int channel) {
@@ -282,46 +226,46 @@ int SPITest_0() {
     // wiringPi 초기화
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return 1;
+        return 0;
     }
 
     // SPI 채널 초기화
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
-        return 1;
+        return 0;
     }
 
     if (wiringPiSPISetup(SPI_CHANNEL_1, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 1!\n");
-        return 1;
+        return 0;
     }
     int n;
     // 채널 0 (CE0) 테스트
     n = spi_loopback_test(SPI_CHANNEL_0);
     return n;
 
-    
+
 }
 
 int SPITest_1() {
     // wiringPi 초기화
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return 1;
+        return 0;
     }
 
     // SPI 채널 초기화
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
-        return 1;
+        return 0;
     }
 
     if (wiringPiSPISetup(SPI_CHANNEL_1, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 1!\n");
-        return 1;
+        return 0;
     }
 
-   
+
     int n;
     // 채널 1 (CE1) 테스트
     n = spi_loopback_test(SPI_CHANNEL_1);
@@ -524,4 +468,420 @@ int bluetoothTest() {
 
     free(ii);
     close(sock);
+}
+
+int i2cTest() {
+    int fd;
+    int deviceAddress = 0x27; // I2C 장치 주소
+    //int bus = 1; // I2C 버스 번호
+
+    // I2C 장치에 연결
+    if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0) {
+        perror("I2C 장치 연결 실패");
+        exit(1);
+    }
+
+    // I2C 장치에서 데이터 읽기
+    int readValue = wiringPiI2CRead(fd);
+    if (readValue < 0) {
+        perror("\033[31mI2C Read Fail\033[0m\n");
+        return 0;
+    }
+    else {
+        printf("읽은 값: 0x%x\n", readValue);
+        printf("\033[32mI2C Read Success\033[0m\n");
+        return 1;
+    }
+
+    // I2C 장치에 데이터 쓰기
+    int writeValue = 0x88; // 쓸 데이터
+    if (wiringPiI2CWrite(fd, writeValue) < 0) {
+        perror("\033[31mI2C Write Fail\033[0m\n");
+        return 0;
+    }
+    else {
+        printf("쓴 값: 0x%x\n", writeValue);
+        printf("\033[32mI2C Write Success\033[0m\n");
+        return 1;
+    }
+
+}
+void resetGPIO() {
+    int pins[12] = { 0, 2, 3, 23, 25, 4, 5, 6, 31, 27, 28, 29 };
+    int HighPin[5] = { 7, 21, 22, 15, 16 };
+    for (int i = 0; i < 12; i++) {
+        pinMode(pins[i], INPUT); // 모든 핀을 기본 입력 모드로 초기화
+        digitalWrite(pins[i], LOW);
+    }
+    for (int i = 0; i < 5; i++) {
+        pinMode(HighPin[i], INPUT); // 모든 핀을 기본 입력 모드로 초기화
+        digitalWrite(pins[i], HIGH);
+    }
+    printf("GPIO reset completed.\n");
+}
+
+double timeCheck()
+{
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    return (double)tp.tv_sec + (double)tp.tv_usec * 1.e-6;
+}
+
+void cpuNumCheck()
+{
+    FILE* cpuinfo = popen("grep processor /proc/cpuinfo | wc -l", "r");
+    FILE* modelname = popen("grep Model /proc/cpuinfo", "r");
+    FILE* lscpu = popen("lscpu | grep 'CPU'", "r");
+
+    if (cpuinfo == NULL || modelname == NULL || lscpu == NULL)
+    {
+        printf(RED "CPU is not run" RESET);
+        exit(-1);
+    }
+    char buffer[BUFFER_SIZE];
+
+    if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
+    {
+        int num_processors = atoi(buffer);
+        //printf("Number of processors: %d\n", num_processors);
+
+        if (num_processors == 4)
+        {
+            //printf("    [+] Processor is alright\n");
+            funcCheck[0] = 2;
+        }
+        else
+        {
+            //printf("[!] Processor number: %d\n", num_processors);
+            funcCheck[0] = 0;
+        }
+    }
+    else
+    {
+        printf(RED "[!] Failed to read output\n" RESET);
+        funcCheck[0] = 0;
+        exit(-1);
+    }
+
+    pclose(cpuinfo);
+    pclose(modelname);
+    pclose(lscpu);
+}
+
+void cpuPerformCheck()
+{
+    char buffer[1024];
+    double cpuSpeed;
+    char* ptr;
+    double cpuTime;
+
+    FILE* fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
+    if (fp == NULL)
+    {
+        printf(RED "[!] cpu Funciton is Failed\n" RESET);
+        exit(-1);
+    }
+    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    {
+        if ((ptr = strstr(buffer, "events per second")) != NULL)
+        {
+            sscanf(ptr, "events per second: %lf", &cpuSpeed);
+            //printf("events per second: %.2lf\n", cpuSpeed);
+        }
+    }
+
+    if (cpuSpeed >= 2000) funcCheck[1] = 2;
+    else if (cpuSpeed >= 500) funcCheck[1] = 1;
+    else funcCheck[1] = 0;
+
+    pclose(fp);
+}
+
+void cpuIPSCheck()
+{
+    clock_t start, end;
+    double cpu_time;
+    long long int instructions = 10006964235;
+    int loop = 1000000000;
+    double result = 0.0;
+
+    start = timeCheck();
+    for (int i = 0; i < loop; i++) {}
+    end = timeCheck();
+
+    cpu_time = ((double)(end - start)) / CLOCKS_PER_SEC;
+    result = instructions / cpu_time;
+    result /= 1000000000;
+
+    //printf("IPS: %.2lf GIPS\n", result);
+
+    if (result >= 1.0) funcCheck[2] = 2;
+    else if (result >= 0.5) funcCheck[2] = 1;
+    else funcCheck[2] = 0;
+}
+
+void cpuFPCheck()
+{
+    double start, end;
+
+
+    double a = 1.234567, b = 9.87654;
+    double c, sum = 0.0;
+
+    long long num = 1000000000;
+
+    start = timeCheck();
+
+    for (long long i = 0; i < num; i++)
+    {
+        c = a * b;
+        sum += c;
+    }
+
+    end = timeCheck();
+
+    double time_stemp = end - start;
+
+    double flops = (num * 3.0) / time_stemp / 1e6;
+
+    //printf("FLOPS: %.2lf GFLOPS\n", flops);
+
+    if (flops >= 24) funcCheck[3] = 2;
+    else if (flops >= 18) funcCheck[3] = 1;
+    else funcCheck[3] = 0;
+}
+
+void memoryFuncCheck()
+{
+    char buffer[1024];
+    char* ptr;
+    double oper;
+    double trans;
+
+    FILE* lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
+    FILE* fp = popen("sysbench memory --threads=4 run", "r");
+    if (lsmem == NULL)
+    {
+        printf(RED "[!] Memory is not Access\n" RESET);
+        exit(-1);
+    }
+    else
+    {
+        //printf("Memory is Access\n");
+        funcCheck[0] = 2;
+    }
+    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    {
+        if ((ptr = strstr(buffer, "Total operations")) != NULL)
+        {
+            sscanf(ptr, "Total operations: %lf", &oper);
+            //printf("Total operations: %.2lf\n", oper);
+        }
+        else if ((ptr = strstr(buffer, "transferred")) != NULL)
+        {
+            sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
+            //printf("MiB Transferred: %.2lf MiB/sec\n", trans);
+        }
+    }
+
+    if (oper >= 20000000.0) funcCheck[1] = 2;
+    else if (oper >= 5000000) funcCheck[1] = 1;
+    else funcCheck[1] = 0;
+
+    pclose(fp);
+    pclose(lsmem);
+}
+
+void readBandWidth()
+{
+    volatile double value;
+    for (size_t i = 0; i < STREAM_ARRAY_SIZE; i++)
+    {
+        value = array[i];
+    }
+}
+
+void writeBandWidth()
+{
+    for (size_t i = 0; i < STREAM_ARRAY_SIZE; i++)
+    {
+        array[i] = i;
+    }
+}
+
+void copyBandWidth()
+{
+    for (size_t i = 0; i < STREAM_ARRAY_SIZE; i++)
+    {
+        b[i] = a[i];
+    }
+}
+
+void memoryBandWidthCheck()
+{
+    double times[3][NTIMES];
+    double avg_t[3], min_t[3], max_t[3], best_rate[3];
+    array = (double*)malloc(STREAM_ARRAY_SIZE * sizeof(double));
+
+    for (int k = 0; k < STREAM_ARRAY_SIZE; k++)
+    {
+        a[k] = 1.0;
+        b[k] = 0.0;
+        array[k] = 0.0;
+    }
+
+    for (int k = 0; k < NTIMES; k++)
+    {
+        double start = timeCheck();
+        copyBandWidth();
+        double end = timeCheck();
+        times[0][k] = end - start;
+    }
+
+    for (int k = 0; k < NTIMES; k++)
+    {
+        double start = timeCheck();
+        readBandWidth();
+        double end = timeCheck();
+        times[1][k] = end - start;
+    }
+
+    for (int k = 0; k < NTIMES; k++)
+    {
+        double start = timeCheck();
+        writeBandWidth();
+        double end = timeCheck();
+        times[2][k] = end - start;
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        min_t[i] = times[i][0];
+        max_t[i] = times[i][0];
+        avg_t[i] = 0.0;
+        for (int k = 0; k < NTIMES; k++)
+        {
+            if (min_t[i] > times[i][k]) min_t[i] = times[i][k];
+            if (max_t[i] < times[i][k]) max_t[i] = times[i][k];
+            avg_t[i] += times[i][k];
+        }
+
+        avg_t[i] /= NTIMES;
+
+        best_rate[i] = (2.0 * STREAM_ARRAY_SIZE * sizeof(double)) / (min_t[i] * 1.0e6);
+    }
+    printf("Function    Best Rate MB/s  Avg time    Min time    Max time\n");
+    printf("Copy:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[0], avg_t[0], min_t[0], max_t[0]);
+    printf("Read:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[1], avg_t[1], min_t[1], max_t[1]);
+    printf("Write:  %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[2], avg_t[2], min_t[2], max_t[2]);
+
+    if (best_rate[1] >= 4000 && best_rate[2] >= 1600 && best_rate[0] >= 1500) funcCheck[2] = 2;
+    else if (best_rate[1] < 4000 && best_rate[2] < 1600 && best_rate[0] < 1500) funcCheck[2] = 0;
+    else funcCheck[2] = 1;
+
+    free(array);
+}
+
+void memoryErrorCheck()
+{
+    uint8_t p = 0xAA;
+    uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint8_t));
+    if (!memory)
+    {
+        printf("[!] Memory allocation failed\n");
+        exit(-1);
+    }
+
+    for (size_t i = 0; i < BUFFER_SIZE; i++)
+    {
+        memory[i] = p;
+    }
+
+    for (size_t i = 0; i < BUFFER_SIZE; i++)
+    {
+        if (memory[i] != p)
+        {
+            printf("[!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+            funcCheck[3] = 0;
+            exit(-1);
+        }
+    }
+
+    funcCheck[3] = 2;
+}
+
+char* getColor(int check)
+{
+    if (check == 0) return RED;
+    else if (check == 1) return YELLOW;
+    else return GREEN;
+}
+
+char* getResult(int check)
+{
+    if (check == 0) return "FAIL";
+    else if (check == 1) return "WARN";
+    else return "PASS";
+}
+
+void printSummary()
+{
+    char* color;
+    char* result;
+
+    printf("=======================================================\n\n");
+    printf(" Index  Test discription                        Result \n\n");
+    printf("=======================================================\n\n");
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (i == 0) printf("     %d. Memory                                   ", i);
+        else if (i == 1) printf("     %d. Memory Performance                       ", i);
+        else if (i == 2) printf("     %d. Memory BandWidth                         ", i);
+        else if (i == 3) printf("     %d. Memory R/W                               ", i);
+        color = getColor(funcCheck[i]);
+        result = getResult(funcCheck[i]);
+        printf("%s%s%s\n\n", color, result, RESET);
+    }
+
+    printf("################### Finish Iteration ##################\n");
+}
+
+void cpuTest()
+{
+    printf("CPU, Processor Check\n");
+    cpuNumCheck();
+
+    printf("CPU Performance Check\n");
+    cpuPerformCheck();
+
+    printf("CPU IPS Check\n");
+    cpuIPSCheck();
+
+    printf("CPU Floating Point Check\n");
+    cpuFPCheck();
+
+    printf("CPU Clear\n");
+
+    printSummary();
+
+    return 0;
+}
+
+void memoryTest()
+{
+    for (int i = 0; i < 5; i++) funcCheck[i] = 0;
+    printf("Memory Function Check\n");
+    memoryFuncCheck();
+
+    printf("Memory BandWidth Check\n");
+    memoryBandWidthCheck();
+
+    printf("Memory Error Check\n");
+    memoryErrorCheck();
+
+    printf("Memory Clear\n");
+
+    printSummary();
+    return 0;
 }
