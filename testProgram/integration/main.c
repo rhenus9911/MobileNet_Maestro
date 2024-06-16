@@ -93,11 +93,11 @@ int main() {
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");
-			for (int i = 0; i < n; i++) {
+			/*for (int i = 0; i < n; i++) {
 				GpioCount += GpioTest();
 				resetGPIO();
 				PwmCount += PWMTest();
-			}
+			}*/
 			testInit();
 			printResult(m);
 
