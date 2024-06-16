@@ -558,16 +558,16 @@ int cpuNumCheck()
 
         if (num_processors == 4)
         {
-            printf("    [+] Processor is alright\n");
+            printf("Processor is alright\n");
         }
         else
         {
-            printf("[!] Processor number: %d\n", num_processors);
+            printf("Processor number: %d\n", num_processors);
         }
     }
     else
     {
-        printf(RED "[!] Failed to read output\n" RESET);
+        printf(RED "Failed to read output\n" RESET);
         return 0;
     }
 
@@ -589,7 +589,7 @@ int cpuPerformCheck()
     FILE* fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
     if (fp == NULL)
     {
-        printf(RED "[!] cpu Funciton is Failed\n" RESET);
+        printf(RED "cpu Funciton is Failed\n" RESET);
         return 0;
     }
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
@@ -670,7 +670,7 @@ int memoryFuncCheck()
     FILE* fp = popen("sysbench memory --threads=4 run", "r");
     if (lsmem == NULL)
     {
-        printf(RED "[!] Memory is not Access\n" RESET);
+        printf(RED "Memory is not Access\n" RESET);
         return 0;
     }
     else
@@ -793,7 +793,7 @@ int memoryErrorCheck()
     uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint8_t));
     if (!memory)
     {
-        printf("[!] Memory allocation failed\n");
+        printf("Memory allocation failed\n");
         return 0;
     }
 
@@ -806,7 +806,7 @@ int memoryErrorCheck()
     {
         if (memory[i] != p)
         {
-            printf("[!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+            printf("Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
             return 0;
         }
     }
@@ -819,7 +819,7 @@ int cpuTest()
     check = cpuNumCheck();
     if(check) check = cpuPerformCheck();
     if(check) check = cpuIPSCheck();
-    if(check) check = cpuFPCheck();
+    if(check) check =  cpuFPCheck();
     if(check) return 1;
     else return 0;
 }
