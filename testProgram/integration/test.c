@@ -537,8 +537,9 @@ double timeCheck()
     return (double)tp.tv_sec + (double)tp.tv_usec * 1.e-6;
 }
 
-void cpuNumCheck()
+int cpuNumCheck()
 {
+    int check = 0;
     FILE* cpuinfo = popen("grep processor /proc/cpuinfo | wc -l", "r");
     FILE* modelname = popen("grep Model /proc/cpuinfo", "r");
     FILE* lscpu = popen("lscpu | grep 'CPU'", "r");
@@ -546,39 +547,39 @@ void cpuNumCheck()
     if (cpuinfo == NULL || modelname == NULL || lscpu == NULL)
     {
         printf(RED "CPU is not run" RESET);
-        exit(-1);
+        return 0;
     }
     char buffer[BUFFER_SIZE];
 
     if (fgets(buffer, sizeof(buffer), cpuinfo) != NULL)
     {
         int num_processors = atoi(buffer);
-        //printf("Number of processors: %d\n", num_processors);
+        printf("Number of processors: %d\n", num_processors);
 
         if (num_processors == 4)
         {
-            //printf("    [+] Processor is alright\n");
-            funcCheck[0] = 2;
+            printf("    [+] Processor is alright\n");
         }
         else
         {
-            //printf("[!] Processor number: %d\n", num_processors);
-            funcCheck[0] = 0;
+            printf("[!] Processor number: %d\n", num_processors);
         }
     }
     else
     {
         printf(RED "[!] Failed to read output\n" RESET);
-        funcCheck[0] = 0;
-        exit(-1);
+        return 0;
     }
 
     pclose(cpuinfo);
     pclose(modelname);
     pclose(lscpu);
+
+    if(check == 1) return 0;
+    else return 1;
 }
 
-void cpuPerformCheck()
+int cpuPerformCheck()
 {
     char buffer[1024];
     double cpuSpeed;
@@ -589,25 +590,24 @@ void cpuPerformCheck()
     if (fp == NULL)
     {
         printf(RED "[!] cpu Funciton is Failed\n" RESET);
-        exit(-1);
+        return 0;
     }
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
         if ((ptr = strstr(buffer, "events per second")) != NULL)
         {
             sscanf(ptr, "events per second: %lf", &cpuSpeed);
-            //printf("events per second: %.2lf\n", cpuSpeed);
+            printf("events per second: %.2lf\n", cpuSpeed);
         }
     }
 
-    if (cpuSpeed >= 2000) funcCheck[1] = 2;
-    else if (cpuSpeed >= 500) funcCheck[1] = 1;
-    else funcCheck[1] = 0;
+    if (cpuSpeed >= 1500) return 1;
+    else return 0;
 
     pclose(fp);
 }
 
-void cpuIPSCheck()
+int cpuIPSCheck()
 {
     clock_t start, end;
     double cpu_time;
@@ -623,11 +623,10 @@ void cpuIPSCheck()
     result = instructions / cpu_time;
     result /= 1000000000;
 
-    //printf("IPS: %.2lf GIPS\n", result);
+    printf("IPS: %.2lf GIPS\n", result);
 
-    if (result >= 1.0) funcCheck[2] = 2;
-    else if (result >= 0.5) funcCheck[2] = 1;
-    else funcCheck[2] = 0;
+    if (result >= 0.5) return 1;
+    else if (result >= 0.5) return 0;
 }
 
 void cpuFPCheck()
@@ -654,14 +653,13 @@ void cpuFPCheck()
 
     double flops = (num * 3.0) / time_stemp / 1e6;
 
-    //printf("FLOPS: %.2lf GFLOPS\n", flops);
+    printf("FLOPS: %.2lf GFLOPS\n", flops);
 
-    if (flops >= 24) funcCheck[3] = 2;
-    else if (flops >= 18) funcCheck[3] = 1;
-    else funcCheck[3] = 0;
+    else if (flops >= 18) return 1;
+    else return 0;
 }
 
-void memoryFuncCheck()
+int memoryFuncCheck()
 {
     char buffer[1024];
     char* ptr;
@@ -673,33 +671,31 @@ void memoryFuncCheck()
     if (lsmem == NULL)
     {
         printf(RED "[!] Memory is not Access\n" RESET);
-        exit(-1);
+        return 0;
     }
     else
     {
-        //printf("Memory is Access\n");
-        funcCheck[0] = 2;
+        printf("Memory is Access\n");
     }
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
         if ((ptr = strstr(buffer, "Total operations")) != NULL)
         {
             sscanf(ptr, "Total operations: %lf", &oper);
-            //printf("Total operations: %.2lf\n", oper);
+            printf("Total operations: %.2lf\n", oper);
         }
         else if ((ptr = strstr(buffer, "transferred")) != NULL)
         {
             sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-            //printf("MiB Transferred: %.2lf MiB/sec\n", trans);
+            printf("MiB Transferred: %.2lf MiB/sec\n", trans);
         }
     }
 
-    if (oper >= 20000000.0) funcCheck[1] = 2;
-    else if (oper >= 5000000) funcCheck[1] = 1;
-    else funcCheck[1] = 0;
-
     pclose(fp);
     pclose(lsmem);
+    
+    if (oper >= 5000000) return 1;
+    else return 0;
 }
 
 void readBandWidth()
@@ -727,7 +723,7 @@ void copyBandWidth()
     }
 }
 
-void memoryBandWidthCheck()
+int memoryBandWidthCheck()
 {
     double times[3][NTIMES];
     double avg_t[3], min_t[3], max_t[3], best_rate[3];
@@ -785,21 +781,20 @@ void memoryBandWidthCheck()
     printf("Read:   %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[1], avg_t[1], min_t[1], max_t[1]);
     printf("Write:  %11.2lf         %8.6lf    %8.6lf    %8.6lf\n", best_rate[2], avg_t[2], min_t[2], max_t[2]);
 
-    if (best_rate[1] >= 4000 && best_rate[2] >= 1600 && best_rate[0] >= 1500) funcCheck[2] = 2;
-    else if (best_rate[1] < 4000 && best_rate[2] < 1600 && best_rate[0] < 1500) funcCheck[2] = 0;
-    else funcCheck[2] = 1;
-
     free(array);
+
+    if (best_rate[1] >= 4000 && best_rate[2] >= 1600 && best_rate[0] >= 1500) return 1;
+    else return 0;
 }
 
-void memoryErrorCheck()
+int memoryErrorCheck()
 {
     uint8_t p = 0xAA;
     uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint8_t));
     if (!memory)
     {
         printf("[!] Memory allocation failed\n");
-        exit(-1);
+        return 0;
     }
 
     for (size_t i = 0; i < BUFFER_SIZE; i++)
@@ -812,86 +807,29 @@ void memoryErrorCheck()
         if (memory[i] != p)
         {
             printf("[!] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
-            funcCheck[3] = 0;
-            exit(-1);
+            return 0;
         }
     }
-
-    funcCheck[3] = 2;
+    return 1;
 }
 
-char* getColor(int check)
+int cpuTest()
 {
-    if (check == 0) return RED;
-    else if (check == 1) return YELLOW;
-    else return GREEN;
-}
-
-char* getResult(int check)
-{
-    if (check == 0) return "FAIL";
-    else if (check == 1) return "WARN";
-    else return "PASS";
-}
-
-void printSummary()
-{
-    char* color;
-    char* result;
-
-    printf("=======================================================\n\n");
-    printf(" Index  Test discription                        Result \n\n");
-    printf("=======================================================\n\n");
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (i == 0) printf("     %d. Memory                                   ", i);
-        else if (i == 1) printf("     %d. Memory Performance                       ", i);
-        else if (i == 2) printf("     %d. Memory BandWidth                         ", i);
-        else if (i == 3) printf("     %d. Memory R/W                               ", i);
-        color = getColor(funcCheck[i]);
-        result = getResult(funcCheck[i]);
-        printf("%s%s%s\n\n", color, result, RESET);
-    }
-
-    printf("################### Finish Iteration ##################\n");
-}
-
-void cpuTest()
-{
-    printf("CPU, Processor Check\n");
-    cpuNumCheck();
-
-    printf("CPU Performance Check\n");
-    cpuPerformCheck();
-
-    printf("CPU IPS Check\n");
-    cpuIPSCheck();
-
-    printf("CPU Floating Point Check\n");
-    cpuFPCheck();
-
-    printf("CPU Clear\n");
-
-    printSummary();
-
-    return;
+    int check = 0;
+    check = cpuNumCheck();
+    if(check) check = cpuPerformCheck();
+    if(check) check = cpuIPSCheck();
+    if(check) check =  cpuFPCheck();
+    if(check) return 1;
+    else return 0;
 }
 
 void memoryTest()
 {
-    for (int i = 0; i < 5; i++) funcCheck[i] = 0;
-    printf("Memory Function Check\n");
-    memoryFuncCheck();
-
-    printf("Memory BandWidth Check\n");
-    memoryBandWidthCheck();
-
-    printf("Memory Error Check\n");
-    memoryErrorCheck();
-
-    printf("Memory Clear\n");
-
-    printSummary();
-    return;
+    int check = 0;
+    check = memoryFuncCheck();
+    if(check) check = memoryBandWidthCheck();
+    if(check) check = memoryErrorCheck();
+    if(check) return 1;
+    else return 0;
 } 

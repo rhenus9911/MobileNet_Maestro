@@ -3,8 +3,6 @@
 #include <fcntl.h>
 #include "test.h"
 
-
-
 int n = 1;
 int m;
 
@@ -19,6 +17,8 @@ char* get_Result(int pass){
 int main() {
 	char* a;
 	while (1) {
+        int CPUCount = 0;
+        int MemCount = 0;
 		int GpioCount = 0;
 		int PwmCount = 0;
 		int SPICount0 = 0;
@@ -35,6 +35,8 @@ int main() {
 			cpuTest();
 			memoryTest();
 			for (int i = 0; i < n; i++) {
+                CPUCount += cpuTest();
+                MemCount += memoryTest();
 				GpioCount += GpioTest();
 				resetGPIO();
 				PwmCount += PWMTest();
@@ -48,28 +50,45 @@ int main() {
 			printf("----------------------------------------------\n");
 			printf("Test Summery\n");
 			printf("----------------------------------------------\n");
+            a = get_Result(CPUCount);
+			printf("0. CPU                               %s\n", a);
+			a = get_Result(MemCount);
+			printf("1. Memory                            %s\n", a);
 			a = get_Result(GpioCount);
-			printf("0. GPIO                              %s\n", a);
+			printf("2. GPIO                              %s\n", a);
 			a = get_Result(PwmCount);
-			printf("1. PWM                               %s\n", a);
+			printf("3. PWM                               %s\n", a);
 			a = get_Result(SPICount0);
-			printf("2. SPI0(A Board Only)                %s\n", a);
+			printf("4. SPI0(A Board Only)                %s\n", a);
 			a = get_Result(SPICount1);
-			printf("3. SPI1(A Board Only)                %s\n", a);
+			printf("5. SPI1(A Board Only)                %s\n", a);
 			a = get_Result(i2cCount);
-			printf("4. I2C                               %s\n", a);
+			printf("6. I2C                               %s\n", a);
 			a = get_Result(wifiCount);
-			printf("5. wifi                              %s\n", a);
+			printf("7. wifi                              %s\n", a);
 			a = get_Result(EthernetCount);
-			printf("6. Ethernet                          %s\n", a);
+			printf("8. Ethernet                          %s\n", a);
 			a = get_Result(blueCount);
-			printf("7. Bluetooth                         %s\n", a);
+			printf("9. Bluetooth                         %s\n", a);
 			printf("Total Test : %d\n", n);
 		}
 		else if (m == 1) {
 			printf("Test start\n\n");
-			cpuTest();
-			memoryTest();
+
+            for(int i = 0; i < n; i++)
+            {
+                CPUCount += cpuTest();
+                MemCount += memoryTest();
+            }
+
+			printf("---------------------------------\n");
+			printf("Test Summery\n");
+			printf("---------------------------------\n");
+			a = get_Result(CPUCount);
+			printf("0. CPU                %s\n", a);
+			a = get_Result(MemCount);
+			printf("1. Memory             %s\n", a);
+			printf("Total Test : %d\n", n);
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");
