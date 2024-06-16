@@ -824,7 +824,7 @@ int cpuTest()
     else return 0;
 }
 
-void memoryTest()
+int memoryTest()
 {
     int check = 0;
     check = memoryFuncCheck();

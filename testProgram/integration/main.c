@@ -32,8 +32,6 @@ int main() {
 		scanf("%d", &m);
 		if (m == 0) {
 			printf("Test start\n\n");
-			cpuTest();
-			memoryTest();
 			for (int i = 0; i < n; i++) {
                 CPUCount += cpuTest();
                 MemCount += memoryTest();
