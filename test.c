@@ -38,9 +38,9 @@
 #define PWM_PIN12 26 // BCM 12, wipi 26
 #define PWM_PIN13 23 // 13, 23
 #define PWM_PIN19 24 // 19, 24
-#define SPI_CHANNEL_0 0  // SPI 채널 0 (CE0)
-#define SPI_CHANNEL_1 1  // SPI 채널 1 (CE1)
-#define SPI_SPEED 500000 // SPI 속도 (500kHz)
+#define SPI_CHANNEL_0 0  // SPI D 0 (CE0)
+#define SPI_CHANNEL_1 1  // SPI D 1 (CE1)
+#define SPI_SPEED 500000 // SPI Ä (500kHz)
 #define DATA_LENGTH 10
 #define BUFFER_SIZE 1024
 #define RED "\033[0;31m"
@@ -60,32 +60,39 @@ static double b[STREAM_ARRAY_SIZE];
 
 
 int GpioTest() {
-    // wiringPi 초기화
+    // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
         return 1;
     }
-    int pins[17] = { 7, 0, 2, 3, 21, 22, 23, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
+    int pins[16] = { 7, 0, 2, 3, 21, 22, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
     int check = 1;
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 16; i++) {
         pinMode(pins[i], OUTPUT);
+        
         digitalWrite(pins[i], HIGH);
-        usleep(300000); // 0.3초 대기
+        //if(i == 5){
+            //digitalWrite(pins[i], LOW); 
+            //}
+        usleep(300000); // 0.3  0
         if (digitalRead(pins[i]) == LOW) {
             printf("\033[31mGPIO %d failed\033[0m\n", pins[i]);
             check = 0;
         }
         digitalWrite(pins[i], LOW);
-        usleep(300000); // 0.3초 대기
+        usleep(300000); // 0.3  0
     }
-    printf("GPIO test completed.\n");
-    if (check == 1) return 1;
+    
+    if (check == 1) {
+        printf("\033[32m GPIO Success\033[0m\n");
+        return 1;
+        }
     else return 0;
 }
 
 void setup() {
     if (wiringPiSetup() == -1) {
-        printf("wiringPi 초기화 실패\n");
+        printf("wiringPi 0T ä(\n");
         exit(1);
     }
 
@@ -103,7 +110,7 @@ double logPWMInput() {
     int value;
     int highCount = 0;
     int lowCount = 0;
-    int totalCount = 1024; // 측정할 샘플 수
+    int totalCount = 1024; // !` Ø 
 
     for (int i = 0; i < totalCount; i++) {
         value = digitalRead(INPUT_PIN);
@@ -115,7 +122,7 @@ double logPWMInput() {
             lowCount++;
         }
 
-        delayMicroseconds(100); // 100us마다 샘플링
+        delayMicroseconds(100); // 100usÈä ØÁ
     }
 
     printf("HIGH Count: %d, LOW Count: %d\n", highCount, lowCount);
@@ -130,7 +137,7 @@ int PWMTest() {
     double  n;
     int check = 0;
     printf("GPIO12 PWM Test\n");
-    pwmWrite(PWM_PIN12, 512);
+    pwmWrite(PWM_PIN12, 0);
     printf("input value : %d\n", 512);
     n = logPWMInput();
     if (n >= 49 && n <= 51) {
@@ -140,7 +147,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1초마다 로그 출력
+    sleep(1); // 1Èä \ø %
 
     printf("GPIO13 PWM Test\n");
     pwmWrite(PWM_PIN13, 512);
@@ -153,7 +160,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1초마다 로그 출력
+    sleep(1); // 1Èä \ø %
 
     printf("GPIO18 PWM Test\n");
     pwmWrite(PWM_PIN18, 512);
@@ -166,7 +173,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1초마다 로그 출력
+    sleep(1); // 1Èä \ø %
     printf("GPIO19 PWM Test\n");
     pwmWrite(PWM_PIN19, 512);
     printf("input value : %d\n", 512);
@@ -178,7 +185,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1초마다 로그 출력
+    sleep(1); // 1Èä \ø %
 
 
     if (check == 1) return 0;
@@ -197,7 +204,7 @@ int spi_loopback_test(int channel) {
     printf("\n");
 
 
-    // SPI로 데이터 전송 및 수신
+    // SPI\ pt0 ¡  à
     if (wiringPiSPIDataRW(channel, data, DATA_LENGTH) == -1) {
         printf("SPI communication failed on channel %d!\n", channel);
         return 0;
@@ -223,13 +230,13 @@ int spi_loopback_test(int channel) {
 }
 
 int SPITest_0() {
-    // wiringPi 초기화
+    // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
         return 0;
     }
 
-    // SPI 채널 초기화
+    // SPI D 0T
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
         return 0;
@@ -240,7 +247,7 @@ int SPITest_0() {
         return 0;
     }
     int n;
-    // 채널 0 (CE0) 테스트
+    // D 0 (CE0) L¤¸
     n = spi_loopback_test(SPI_CHANNEL_0);
     return n;
 
@@ -248,13 +255,13 @@ int SPITest_0() {
 }
 
 int SPITest_1() {
-    // wiringPi 초기화
+    // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
         return 0;
     }
 
-    // SPI 채널 초기화
+    // SPI D 0T
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
         return 0;
@@ -267,7 +274,7 @@ int SPITest_1() {
 
 
     int n;
-    // 채널 1 (CE1) 테스트
+    // D 1 (CE1) L¤¸
     n = spi_loopback_test(SPI_CHANNEL_1);
     return n;
 }
@@ -283,9 +290,9 @@ int wifiTest() {
         return 0;
     }
 
-    // 명령 출력을 버퍼에 저장
+    // 9 %D |Ð  ¥
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        // ESSID 확인
+        // ESSID Ux
         if (strstr(buffer, "ESSID") != NULL) {
             if (strstr(buffer, "off/any") == NULL) {
                 is_connected = 1;
@@ -296,7 +303,7 @@ int wifiTest() {
         }
     }
 
-    // 연결된 경우 추가 정보 출력
+    // ð° ½°   ô %
     if (is_connected) {
         while (fgets(buffer, sizeof(buffer), fp) != NULL) {
             printf("%s", buffer);
@@ -385,14 +392,14 @@ void iperf_test(const char* server_ip) {
 }
 
 int EthernetTest() {
-    // 1. 네트워크 설정 확인
+    // 1. $¸Ìl $ Ux
     check_network_interface();
 
-    // 2. 네트워크 연결 테스트
+    // 2. $¸Ìl ð° L¤¸
     const char* external_ip = "8.8.8.8";
     ping_test(external_ip);
 
-    // 3. 라즈베리 파이의 IP 주소 확인 및 네트워크 속도 테스트
+    // 3. | ¬ tX IP ü Ux  $¸Ìl Ä L¤¸
     char* raspberry_pi_ip = get_ip_address();
     if (raspberry_pi_ip != NULL) {
         iperf_test(raspberry_pi_ip);
@@ -412,7 +419,7 @@ int bluetoothTest() {
     char addr[19] = { 0 };
     char name[248] = { 0 };
     int connected_devices = 0;
-
+    printf("bluetoothTest Start\n");
     dev_id = hci_get_route(NULL);
     if (dev_id < 0) {
         perror("hci_get_route");
@@ -461,7 +468,7 @@ int bluetoothTest() {
     }
 
     if (connected_devices == 0) {
-        printf("No connected devices.\n");
+        printf("\033[31mNo connected devices.\033[0m\n");
         return 0;
     }
     else return 1;
@@ -472,49 +479,52 @@ int bluetoothTest() {
 
 int i2cTest() {
     int fd;
-    int deviceAddress = 0x27; // I2C 장치 주소
-    //int bus = 1; // I2C 버스 번호
-
-    // I2C 장치에 연결
+    int deviceAddress = 0x27; // I2C ¥X ü
+    //int bus = 1; // I2C ¤ 8
+    int check = 1;
+    // I2C ¥XÐ ð°
     if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0) {
-        perror("I2C 장치 연결 실패");
+        perror("I2C failed");
         exit(1);
     }
 
-    // I2C 장치에서 데이터 읽기
+    // I2C ¥XÐ pt0 }0
     int readValue = wiringPiI2CRead(fd);
     if (readValue < 0) {
         perror("\033[31mI2C Read Fail\033[0m\n");
-        return 0;
+        check = 0;
+        
     }
     else {
-        printf("읽은 값: 0x%x\n", readValue);
+        printf("Read Data: 0x%x\n", readValue);
         printf("\033[32mI2C Read Success\033[0m\n");
-        return 1;
+        
     }
 
-    // I2C 장치에 데이터 쓰기
-    int writeValue = 0x88; // 쓸 데이터
+    // I2C ¥XÐ pt0 ð0
+    int writeValue = 0x88; // ø pt0
     if (wiringPiI2CWrite(fd, writeValue) < 0) {
         perror("\033[31mI2C Write Fail\033[0m\n");
-        return 0;
+        check = 0;
     }
     else {
-        printf("쓴 값: 0x%x\n", writeValue);
+        printf("Wirte Data: 0x%x\n", writeValue);
         printf("\033[32mI2C Write Success\033[0m\n");
-        return 1;
+        
     }
+    if(check == 1) return 1;
+    else return 0;
 
 }
 void resetGPIO() {
-    int pins[12] = { 0, 2, 3, 23, 25, 4, 5, 6, 31, 27, 28, 29 };
+    int pins[11] = { 0, 2, 3, 25, 4, 5, 6, 31, 27, 28, 29 };
     int HighPin[5] = { 7, 21, 22, 15, 16 };
-    for (int i = 0; i < 12; i++) {
-        pinMode(pins[i], INPUT); // 모든 핀을 기본 입력 모드로 초기화
+    for (int i = 0; i < 11; i++) {
+        pinMode(pins[i], INPUT); // ¨à @D 0ø % ¨Ü\ 0T
         digitalWrite(pins[i], LOW);
     }
     for (int i = 0; i < 5; i++) {
-        pinMode(HighPin[i], INPUT); // 모든 핀을 기본 입력 모드로 초기화
+        pinMode(HighPin[i], INPUT); // ¨à @D 0ø % ¨Ü\ 0T
         digitalWrite(pins[i], HIGH);
     }
     printf("GPIO reset completed.\n");
@@ -573,7 +583,7 @@ void cpuPerformCheck()
     char buffer[1024];
     double cpuSpeed;
     char* ptr;
-    double cpuTime;
+    //double cpuTime;
 
     FILE* fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
     if (fp == NULL)
@@ -865,7 +875,7 @@ void cpuTest()
 
     printSummary();
 
-    return 0;
+    return;
 }
 
 void memoryTest()
@@ -883,5 +893,5 @@ void memoryTest()
     printf("Memory Clear\n");
 
     printSummary();
-    return 0;
-}
+    return;
+} 
