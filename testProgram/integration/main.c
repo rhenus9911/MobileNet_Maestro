@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include "test.h"
 
 
@@ -23,13 +24,14 @@ void testInit() {
 
 void printResult(int m) {
     int cnt = 0;
+    char* a;
     if(m == 0 || m == 1) {
         
     }
     if(m == 0 || m == 2) {
         a = get_Result(GpioTest());
         printf("%d. GPIO               %s\n",cnt++, a);
-        a = get_Result(PwmTest());
+        a = get_Result(PWMTest());
         printf("%d. PWM                %s\n",cnt++, a);
     }
     if(m == 0 || m == 3) {
@@ -52,7 +54,6 @@ void printResult(int m) {
 
 
 int main() {
-	char* a;
 	while (1) {
         int GpioCount = 0;
 		int PwmCount = 0;

@@ -405,7 +405,7 @@ bool EthernetTest() {
     if (raspberry_pi_ip != NULL) {
         iperf_test(raspberry_pi_ip);
         free(raspberry_pi_ip);
-        return true
+        return true;
     }
     else {
         printf("\033[31mFailed to retrieve Raspberry Pi IP address.\033[0m\n");
