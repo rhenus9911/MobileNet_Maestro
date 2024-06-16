@@ -563,6 +563,7 @@ int cpuNumCheck()
         else
         {
             printf("Processor number: %d\n", num_processors);
+            return 0;
         }
     }
     else
@@ -575,8 +576,7 @@ int cpuNumCheck()
     pclose(modelname);
     pclose(lscpu);
 
-    if(check == 1) return 0;
-    else return 1;
+    return 1;
 }
 
 int cpuPerformCheck()
@@ -601,7 +601,7 @@ int cpuPerformCheck()
         }
     }
 
-    if (cpuSpeed >= 1500) return 1;
+    if (cpuSpeed >= 1000) return 1;
     else return 0;
 
     pclose(fp);
@@ -626,7 +626,7 @@ int cpuIPSCheck()
     printf("IPS: %.2lf GIPS\n", result);
 
     if (result >= 0.5) return 1;
-    else if (result >= 0.5) return 0;
+    else return 0;
 }
 
 int cpuFPCheck()
@@ -783,7 +783,7 @@ int memoryBandWidthCheck()
 
     free(array);
 
-    if (best_rate[1] >= 4000 && best_rate[2] >= 1600 && best_rate[0] >= 1500) return 1;
+    if (best_rate[1] >= 3000 && best_rate[2] >= 800 && best_rate[0] >= 700) return 1;
     else return 0;
 }
 
