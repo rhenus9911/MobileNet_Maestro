@@ -629,7 +629,7 @@ int cpuIPSCheck()
     else if (result >= 0.5) return 0;
 }
 
-void cpuFPCheck()
+int cpuFPCheck()
 {
     double start, end;
 
@@ -655,7 +655,7 @@ void cpuFPCheck()
 
     printf("FLOPS: %.2lf GFLOPS\n", flops);
 
-    else if (flops >= 18) return 1;
+    if (flops >= 18) return 1;
     else return 0;
 }
 
@@ -819,7 +819,7 @@ int cpuTest()
     check = cpuNumCheck();
     if(check) check = cpuPerformCheck();
     if(check) check = cpuIPSCheck();
-    if(check) check =  cpuFPCheck();
+    if(check) check = cpuFPCheck();
     if(check) return 1;
     else return 0;
 }
