@@ -8,8 +8,16 @@
 int n = 1;
 int m;
 
+char* get_Result(int pass){
+	if(pass == 1){
+		return "\033[32mSuccess\033[0m";
+		}
+	else return "\033[31mFailed\033[0m";
+}
+
+
 int main() {
-	printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
+	char* a;
 	while (1) {
 		int GpioCount = 0;
 		int PwmCount = 0;
@@ -19,9 +27,13 @@ int main() {
 		int EthernetCount = 0;
 		int blueCount = 0;
 		int i2cCount = 0;
+		printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
 		printf("Test Num Select: ");
 		scanf("%d", &m);
 		if (m == 0) {
+			printf("Test start\n\n");
+			cpuTest();
+			memoryTest();
 			for (int i = 0; i < n; i++) {
 				GpioCount += GpioTest();
 				resetGPIO();
@@ -33,17 +45,25 @@ int main() {
 				blueCount += bluetoothTest();
 				i2cCount += i2cTest();
 			}
-			printf("---------------------------------\n");
+			printf("----------------------------------------------\n");
 			printf("Test Summery\n");
-			printf("---------------------------------\n");
-			printf("0. GPIO               Pass: %d   Fail: %d\n", GpioCount, n - GpioCount);
-			printf("1. PWM                Pass: %d   Fail: %d\n", PwmCount, n - PwmCount);
-			printf("2. SPI0               Pass: %d   Fail: %d\n", SPICount0, n - SPICount0);
-			printf("3. SPI1               Pass: %d   Fail: %d\n", SPICount1, n - SPICount1);
-			printf("4. I2C                Pass: %d   Fail: %d\n", i2cCount, n - i2cCount);
-			printf("5. wifi               Pass: %d   Fail: %d\n", wifiCount, n - wifiCount);
-			printf("6. Ethernet           Pass: %d   Fail: %d\n", EthernetCount, n - EthernetCount);
-			printf("7. Bluetooth          Pass: %d   Fail: %d\n", blueCount, n - blueCount);
+			printf("----------------------------------------------\n");
+			a = get_Result(GpioCount);
+			printf("0. GPIO                              %s\n", a);
+			a = get_Result(PwmCount);
+			printf("1. PWM                               %s\n", a);
+			a = get_Result(SPICount0);
+			printf("2. SPI0(A Board Only)                %s\n", a);
+			a = get_Result(SPICount1);
+			printf("3. SPI1(A Board Only)                %s\n", a);
+			a = get_Result(i2cCount);
+			printf("4. I2C                               %s\n", a);
+			a = get_Result(wifiCount);
+			printf("5. wifi                              %s\n", a);
+			a = get_Result(EthernetCount);
+			printf("6. Ethernet                          %s\n", a);
+			a = get_Result(blueCount);
+			printf("7. Bluetooth                         %s\n", a);
 			printf("Total Test : %d\n", n);
 		}
 		else if (m == 1) {
@@ -52,6 +72,7 @@ int main() {
 			memoryTest();
 		}
 		else if (m == 2) {
+			printf("Test start\n\n");
 			for (int i = 0; i < n; i++) {
 				GpioCount += GpioTest();
 				resetGPIO();
@@ -60,34 +81,50 @@ int main() {
 			printf("---------------------------------\n");
 			printf("Test Summery\n");
 			printf("---------------------------------\n");
-			printf("0. GPIO               Pass: %d   Fail: %d\n", GpioCount, n - GpioCount);
-			printf("1. PWM                Pass: %d   Fail: %d\n", PwmCount, n - PwmCount);
+			a = get_Result(GpioCount);
+			printf("0. GPIO               %s\n", a);
+			a = get_Result(PwmCount);
+			printf("1. PWM                %s\n", a);
 			printf("Total Test : %d\n", n);
 		}
 		else if (m == 3) {
+			printf("Test start\n\n");
 			for (int i = 0; i < n; i++) {
 				SPICount0 += SPITest_0();
 				SPICount1 += SPITest_1();
 				i2cCount += i2cTest();
-				printf("0. SPI0               Pass: %d   Fail: %d\n", SPICount0, n - SPICount0);
-				printf("1. SPI1               Pass: %d   Fail: %d\n", SPICount1, n - SPICount1);
-				printf("2. I2C                Pass: %d   Fail: %d\n", i2cCount, n - i2cCount);
+				printf("---------------------------------\n");
+				printf("Test Summery\n");
+				printf("---------------------------------\n");
+				a = get_Result(SPICount0);
+				printf("0. SPI0               %s\n", a);
+				a = get_Result(SPICount1);
+				printf("1. SPI1               %s\n", a);
+				a = get_Result(i2cCount);
+				printf("2. I2C                %s\n", a);
 				printf("Total Test : %d\n", n);
 			}
 		}
 		else if (m == 4) {
+			printf("Test start\n\n");
 			for (int i = 0; i < n; i++) {
 				wifiCount += wifiTest();
 				EthernetCount += EthernetTest();
 				blueCount += bluetoothTest();
-				printf("0. wifi               Pass: %d   Fail: %d\n", wifiCount, n - wifiCount);
-				printf("1. Ethernet           Pass: %d   Fail: %d\n", EthernetCount, n - EthernetCount);
-				printf("2. Bluetooth          Pass: %d   Fail: %d\n", blueCount, n - blueCount);
+				printf("---------------------------------\n");
+				printf("Test Summery\n");
+				printf("---------------------------------\n");
+				a = get_Result(wifiCount);
+				printf("0. wifi               %s\n", a);
+				a = get_Result(EthernetCount);
+				printf("1. Ethernet           %s\n", a);
+				a = get_Result(blueCount);
+				printf("2. Bluetooth          %s\n", a);
 				printf("Total Test : %d\n", n);
 
 			}
 		}
-		else if (m == 5) break;
+		else break;
 	}
 	return 0;
 }
