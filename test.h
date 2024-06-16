@@ -60,4 +60,3 @@ char* getResult(int check);
 void printSummary();
 void cpuTest();
 void memoryTest();
-
