@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 모듈 소스 파일
-MODULE_NAME="nobrand"
+MODULE_NAME="testkernel"
 SRC_FILE="${MODULE_NAME}.c"
 KDIR := /usr/src/linux
 
@@ -9,10 +9,11 @@ KDIR := /usr/src/linux
 cat <<EOF > Makefile
 obj-m += testkernel.o
 KDIR := /usr/src/linux
+KBUILD_EXTRA_SYMBOLS := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
 all:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	$(MAKE) -C $(KDIR) M=$(PWD) EXTRA_CFLAGS=-I/usr/src/linux/include modules
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
@@ -39,7 +40,7 @@ else
 fi
 
 # 커널 로그 확인
-dmesg | tail -n 10
+dmesg | tail -n 10 | grep 'Test module initialized'
 
 # 20초 대기 후 모듈 언로드
 sleep 20
@@ -53,4 +54,4 @@ else
 fi
 
 # 커널 로그 확인
-dmesg | tail -n 10
+dmesg | tail -n 10 | grep 'Test module exited'
