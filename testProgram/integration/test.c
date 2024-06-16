@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <stdbool.h>
 #include <time.h>
 #include <math.h>
 

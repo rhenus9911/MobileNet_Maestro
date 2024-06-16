@@ -21,7 +21,7 @@ void testInit() {
 	printf("----------------------------------------------\n");
 }
 
-void printResut(int m) {
+void printResult(int m) {
     int cnt = 0;
     if(m == 0 || m == 1) {
         
@@ -81,7 +81,7 @@ int main() {
 			}
 
             testInit();
-            printResut(m);
+            printResult(m);
 
 			printf("Total Test : %d\n", n);
 		}
