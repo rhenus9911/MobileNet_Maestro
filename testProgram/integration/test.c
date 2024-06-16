@@ -19,7 +19,6 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <sys/time.h>
-#include <stdbool.h>
 #include <time.h>
 #include <math.h>
 
@@ -60,11 +59,11 @@ static double a[STREAM_ARRAY_SIZE];
 static double b[STREAM_ARRAY_SIZE];
 
 
-bool GpioTest() {
+int GpioTest() {
     // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return false;
+        return 1;
     }
     int pins[16] = { 7, 0, 2, 3, 21, 22, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
     int check = 1;
@@ -86,9 +85,9 @@ bool GpioTest() {
     
     if (check == 1) {
         printf("\033[32m GPIO Success\033[0m\n");
-        return true;
+        return 1;
         }
-    else return false;
+    else return 0;
 }
 
 void setup() {
@@ -133,7 +132,7 @@ double logPWMInput() {
     return highCount / (float)totalCount * 100;
 }
 
-bool PWMTest() {
+int PWMTest() {
     setup();
     double  n;
     int check = 0;
@@ -189,8 +188,8 @@ bool PWMTest() {
     sleep(1); // 1Èä \ø %
 
 
-    if (check == 1) return false;
-    else return true;
+    if (check == 1) return 0;
+    else return 1;
 }
 
 int spi_loopback_test(int channel) {
@@ -234,18 +233,18 @@ int SPITest_0() {
     // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return false;
+        return 0;
     }
 
     // SPI D 0T
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
-        return false;
+        return 0;
     }
 
     if (wiringPiSPISetup(SPI_CHANNEL_1, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 1!\n");
-        return false;
+        return 0;
     }
     int n;
     // D 0 (CE0) L¤¸
@@ -255,22 +254,22 @@ int SPITest_0() {
 
 }
 
-bool SPITest_1() {
+int SPITest_1() {
     // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return false;
+        return 0;
     }
 
     // SPI D 0T
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
-        return false;
+        return 0;
     }
 
     if (wiringPiSPISetup(SPI_CHANNEL_1, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 1!\n");
-        return false;
+        return 0;
     }
 
 
@@ -280,7 +279,7 @@ bool SPITest_1() {
     return n;
 }
 
-bool wifiTest() {
+int wifiTest() {
     char buffer[BUFFER_SIZE];
     FILE* fp;
     int is_connected = 0;
@@ -288,7 +287,7 @@ bool wifiTest() {
     fp = popen("iwconfig 2>&1", "r");
     if (fp == NULL) {
         printf("Failed to run iwconfig\n");
-        return false;
+        return 0;
     }
 
     // 9 %D |Ð  ¥
@@ -309,11 +308,11 @@ bool wifiTest() {
         while (fgets(buffer, sizeof(buffer), fp) != NULL) {
             printf("%s", buffer);
         }
-        return true;
+        return 1;
     }
     else {
         printf("\033[31mNot connected to any Wi-Fi network.\033[0m\n");
-        return false;
+        return 0;
     }
 
 
@@ -392,7 +391,7 @@ void iperf_test(const char* server_ip) {
     }
 }
 
-bool EthernetTest() {
+int EthernetTest() {
     // 1. $¸Ìl $ Ux
     check_network_interface();
 
@@ -405,15 +404,15 @@ bool EthernetTest() {
     if (raspberry_pi_ip != NULL) {
         iperf_test(raspberry_pi_ip);
         free(raspberry_pi_ip);
-        return true;
+        return 1;
     }
     else {
         printf("\033[31mFailed to retrieve Raspberry Pi IP address.\033[0m\n");
-        return false;
+        return 0;
     }
 }
 
-bool bluetoothTest() {
+int bluetoothTest() {
     inquiry_info* ii = NULL;
     int max_rsp, num_rsp;
     int dev_id, sock, len, flags;
@@ -470,15 +469,15 @@ bool bluetoothTest() {
 
     if (connected_devices == 0) {
         printf("\033[31mNo connected devices.\033[0m\n");
-        return false;
+        return 0;
     }
-    else return true;
+    else return 1;
 
     free(ii);
     close(sock);
 }
 
-bool i2cTest() {
+int i2cTest() {
     int fd;
     int deviceAddress = 0x27; // I2C ¥X ü
     //int bus = 1; // I2C ¤ 8
@@ -513,8 +512,8 @@ bool i2cTest() {
         printf("\033[32mI2C Write Success\033[0m\n");
         
     }
-    if(check == 1) return true;
-    else return false;
+    if(check == 1) return 1;
+    else return 0;
 
 }
 void resetGPIO() {

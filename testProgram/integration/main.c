@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <stdbool.h>
 #include "test.h"
 
 
@@ -9,53 +8,18 @@
 int n = 1;
 int m;
 
-char* get_Result(bool pass){
-	if(pass){
+char* get_Result(int pass){
+	if(pass == 1){
 		return "\033[32mSuccess\033[0m";
 		}
 	else return "\033[31mFailed\033[0m";
 }
 
-void testInit() {
-    printf("----------------------------------------------\n");
-	printf("Test Summery\n");
-	printf("----------------------------------------------\n");
-}
-
-void printResult(int m) {
-    int cnt = 0;
-    char* a;
-    if(m == 0 || m == 1) {
-        
-    }
-    if(m == 0 || m == 2) {
-        a = get_Result(GpioTest());
-        printf("%d. GPIO               %s\n",cnt++, a);
-        a = get_Result(PWMTest());
-        printf("%d. PWM                %s\n",cnt++, a);
-    }
-    if(m == 0 || m == 3) {
-        a = get_Result(SPITest_0());
-        printf("%d. SPI0               %s\n",cnt++, a);
-        a = get_Result(SPITest_1());
-        printf("%d. SPI1               %s\n",cnt++, a);
-        a = get_Result(i2cTest());
-        printf("%d. I2C                %s\n",cnt++, a);
-    }
-    if(m == 0 || m == 4) {
-        a = get_Result(wifiTest());
-        printf("%d. wifi               %s\n",cnt++, a);
-        a = get_Result(EthernetTest());
-        printf("%d. Ethernet           %s\n",cnt++, a);
-        a = get_Result(bluetoothTest());
-        printf("%d. Bluetooth          %s\n",cnt++, a);
-    }
-}
-
 
 int main() {
+	char* a;
 	while (1) {
-        int GpioCount = 0;
+		int GpioCount = 0;
 		int PwmCount = 0;
 		int SPICount0 = 0;
 		int SPICount1 = 0;
@@ -71,7 +35,8 @@ int main() {
 			cpuTest();
 			memoryTest();
 			for (int i = 0; i < n; i++) {
-                GpioCount += GpioTest();
+				GpioCount += GpioTest();
+				resetGPIO();
 				PwmCount += PWMTest();
 				SPICount0 += SPITest_0();
 				SPICount1 += SPITest_1();
@@ -80,10 +45,25 @@ int main() {
 				blueCount += bluetoothTest();
 				i2cCount += i2cTest();
 			}
-
-            testInit();
-            printResult(m);
-
+			printf("----------------------------------------------\n");
+			printf("Test Summery\n");
+			printf("----------------------------------------------\n");
+			a = get_Result(GpioCount);
+			printf("0. GPIO                              %s\n", a);
+			a = get_Result(PwmCount);
+			printf("1. PWM                               %s\n", a);
+			a = get_Result(SPICount0);
+			printf("2. SPI0(A Board Only)                %s\n", a);
+			a = get_Result(SPICount1);
+			printf("3. SPI1(A Board Only)                %s\n", a);
+			a = get_Result(i2cCount);
+			printf("4. I2C                               %s\n", a);
+			a = get_Result(wifiCount);
+			printf("5. wifi                              %s\n", a);
+			a = get_Result(EthernetCount);
+			printf("6. Ethernet                          %s\n", a);
+			a = get_Result(blueCount);
+			printf("7. Bluetooth                         %s\n", a);
 			printf("Total Test : %d\n", n);
 		}
 		else if (m == 1) {
@@ -93,15 +73,19 @@ int main() {
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");
-			/*for (int i = 0; i < n; i++) {
+			for (int i = 0; i < n; i++) {
 				GpioCount += GpioTest();
 				resetGPIO();
 				PwmCount += PWMTest();
-			}*/
-			testInit();
-			printResult(m);
-
-            printf("Total Test : %d\n", n);
+			}
+			printf("---------------------------------\n");
+			printf("Test Summery\n");
+			printf("---------------------------------\n");
+			a = get_Result(GpioCount);
+			printf("0. GPIO               %s\n", a);
+			a = get_Result(PwmCount);
+			printf("1. PWM                %s\n", a);
+			printf("Total Test : %d\n", n);
 		}
 		else if (m == 3) {
 			printf("Test start\n\n");
@@ -109,12 +93,17 @@ int main() {
 				SPICount0 += SPITest_0();
 				SPICount1 += SPITest_1();
 				i2cCount += i2cTest();
-            }
-				
-            testInit();
-            printResult(m);
-
-            printf("Total Test : %d\n", n);
+				printf("---------------------------------\n");
+				printf("Test Summery\n");
+				printf("---------------------------------\n");
+				a = get_Result(SPICount0);
+				printf("0. SPI0               %s\n", a);
+				a = get_Result(SPICount1);
+				printf("1. SPI1               %s\n", a);
+				a = get_Result(i2cCount);
+				printf("2. I2C                %s\n", a);
+				printf("Total Test : %d\n", n);
+			}
 		}
 		else if (m == 4) {
 			printf("Test start\n\n");
@@ -122,14 +111,18 @@ int main() {
 				wifiCount += wifiTest();
 				EthernetCount += EthernetTest();
 				blueCount += bluetoothTest();
+				printf("---------------------------------\n");
+				printf("Test Summery\n");
+				printf("---------------------------------\n");
+				a = get_Result(wifiCount);
+				printf("0. wifi               %s\n", a);
+				a = get_Result(EthernetCount);
+				printf("1. Ethernet           %s\n", a);
+				a = get_Result(blueCount);
+				printf("2. Bluetooth          %s\n", a);
+				printf("Total Test : %d\n", n);
 
-            }
-
-            testInit();
-            printResult(m);
-
-            printf("Total Test : %d\n", n);
-
+			}
 		}
 		else break;
 	}
