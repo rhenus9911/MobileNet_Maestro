@@ -33,7 +33,7 @@ void check_wifi_connection() {
         while (fgets(buffer, sizeof(buffer), fp) != NULL) {
             printf("%s", buffer);
         }
-    } else {
+    } else { 
         printf("Not connected to any Wi-Fi network.\n");
     }
 
