@@ -15,7 +15,7 @@ struct ping_pkt {
     char msg[PING_PKT_S - sizeof(struct icmphdr)];
 };
 
-unsigned short checksum(void *b, int len) {    
+unsigned short checksum(void *b, int len) {
     unsigned short *buf = b;
     unsigned int sum = 0;
     unsigned short result;
@@ -38,21 +38,47 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const char *hostname = argv[1];
-    struct hostent *hname = gethostbyname(hostname);
-    if (hname == NULL) {
-        perror("gethostbyname");
+    // 관리자 권한 확인
+    if (geteuid() != 0) {
+        fprintf(stderr, "This program must be run as root. Please use sudo.\n");
         return 1;
     }
 
-    struct sockaddr_in addr_con;
-    addr_con.sin_family = hname->h_addrtype;
-    addr_con.sin_port = 0;
-    addr_con.sin_addr.s_addr = *(long*)hname->h_addr;
+    const char *hostname = argv[1];
+    struct addrinfo hints, *res, *p;
+    int status;
 
-    int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (sockfd < 0) {
-        perror("socket");
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC; // IPv4 또는 IPv6
+    hints.ai_socktype = SOCK_RAW;
+    hints.ai_protocol = IPPROTO_ICMP;
+
+    if ((status = getaddrinfo(hostname, NULL, &hints, &res)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+        return 1;
+    }
+
+    int sockfd;
+    struct sockaddr_in *ipv4 = NULL;
+    struct sockaddr_in6 *ipv6 = NULL;
+    for (p = res; p != NULL; p = p->ai_next) {
+        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (sockfd < 0) {
+            perror("socket");
+            continue;
+        }
+
+        if (p->ai_family == AF_INET) {
+            ipv4 = (struct sockaddr_in *)p->ai_addr;
+        } else if (p->ai_family == AF_INET6) {
+            ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+        }
+
+        break;
+    }
+
+    if (p == NULL) {
+        fprintf(stderr, "Failed to create socket\n");
         return 1;
     }
 
@@ -78,7 +104,7 @@ int main(int argc, char *argv[]) {
 
         usleep(1000000);
         clock_gettime(CLOCK_MONOTONIC, &tfs);
-        if (sendto(sockfd, &pckt, sizeof(pckt), 0, (struct sockaddr*)&addr_con, sizeof(addr_con)) <= 0) {
+        if (sendto(sockfd, &pckt, sizeof(pckt), 0, p->ai_addr, p->ai_addrlen) <= 0) {
             perror("sendto");
             flag = 0;
         }
@@ -97,6 +123,8 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    freeaddrinfo(res);
     close(sockfd);
     return 0;
 }
