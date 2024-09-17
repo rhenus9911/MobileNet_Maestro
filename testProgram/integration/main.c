@@ -23,18 +23,18 @@ char* get_Result(int pass){
 
 int main() {
 	char* a;
-	
-	if (wiringPiSetup() == -1) {
-        	printf("wiringPi ^H0T ä(\n");
-        	exit(1);
-    	}
 
+	if (wiringPiSetup() == -1) {
+		printf("wiringPi ^H0T ä(\n");
+		exit(1);
+	}
+	
 	pinMode(SUCCESS_TEST, OUTPUT);
 	pinMode(FAIL_TEST, OUTPUT);
 
 	while (1) {
-		int CPUCount = 0;
-        	int MemCount = 0;
+        int CPUCount = 0;
+        int MemCount = 0;
 		int GpioCount = 0;
 		int PwmCount = 0;
 		int SPICount0 = 0;
@@ -51,8 +51,8 @@ int main() {
 		if (m == 0) {
 			printf("Test start\n\n");
 			for (int i = 0; i < n; i++) {
-                		CPUCount += cpuTest();
-                		MemCount += memoryTest();
+                CPUCount += cpuTest();
+                MemCount += memoryTest();
 				GpioCount += GpioTest();
 				resetGPIO();
 				PwmCount += PWMTest();
@@ -66,7 +66,7 @@ int main() {
 			printf("----------------------------------------------\n");
 			printf("Test Summery\n");
 			printf("----------------------------------------------\n");
-            		a = get_Result(CPUCount);
+            a = get_Result(CPUCount);
 			printf("0. CPU                               %s\n", a);
 			a = get_Result(MemCount);
 			printf("1. Memory                            %s\n", a);
@@ -91,11 +91,11 @@ int main() {
 		else if (m == 1) {
 			printf("Test start\n\n");
 
-            		for(int i = 0; i < n; i++)
-            		{
-                		CPUCount += cpuTest();
-                		MemCount += memoryTest();
-            		}
+            for(int i = 0; i < n; i++)
+            {
+                CPUCount += cpuTest();
+                MemCount += memoryTest();
+            }
 
 			printf("---------------------------------\n");
 			printf("Test Summery\n");
@@ -107,14 +107,20 @@ int main() {
 			printf("1. Memory             %s\n", a);
 			printf("Total Test : %d\n", n);
 
-			printf("%d\n", fail);
-			if(!fail) {
-				digitalWrite(SUCCESS_TEST, HIGH);
+			for(int cnt=0; cnt<5;cnt++) {
+				if(!fail) {
+					digitalWrite(SUCCESS_TEST, HIGH);
+					delay(500);
+					digitalWrite(SUCCESS_TEST, LOW);
+					delay(500);notp
+				}
+				else {
+					digitalWrite(FAIL_TEST, HIGH);
+					delay(500);
+					digitalWrite(FAIL_TEST, LOW);
+					delay(500);
+				}
 			}
-			else {
-				digitalWrite(FAIL_TEST, HIGH);
-			}
-			delay(300000);
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");
