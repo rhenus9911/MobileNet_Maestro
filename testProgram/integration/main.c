@@ -12,7 +12,6 @@ bool fail = false;
 
 char* get_Result(int pass){
 	if(pass == 1){
-		fail = false;
 		return "\033[32mSuccess\033[0m";
 	}
 	else{
@@ -41,6 +40,8 @@ void printResult() {
 
 int main() {
 	char* a;
+
+	fail = false;
 
 	if (wiringPiSetup() == -1) {
 		printf("wiringPi is not connected\n");
