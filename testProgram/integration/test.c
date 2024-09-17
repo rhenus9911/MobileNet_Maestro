@@ -51,14 +51,10 @@
 #define BUFFER_SIZE 1024
 #define STREAM_ARRAY_SIZE 100000000
 #define NTIMES 20
-
-#define SUCCESS 27
-#define FAIL 28
+#define SUCCESS_TEST 27
+#define FAIL_TEST 28
 
 int funcCheck[5] = { 0 };
-
-pinMode(SUCCESS, OUTPUT);
-pinMode(FAIL, OUTPUT);
 
 double* array;
 static double a[STREAM_ARRAY_SIZE];
@@ -107,6 +103,8 @@ void setup() {
     pinMode(PWM_PIN13, PWM_OUTPUT);
     pinMode(PWM_PIN19, PWM_OUTPUT);
     pinMode(INPUT_PIN, INPUT);
+    pinMode(SUCCESS_TEST, OUTPUT);
+    pinMode(FAIL_TEST, OUTPUT);
 
     pwmSetMode(PWM_MODE_MS);
     pwmSetRange(1024);
