@@ -21,8 +21,6 @@ char* get_Result(int pass){
 }
 
 void printResult() {
-	printf("printResult\n");
-	printf("fail: %d\n", fail);
 	for(int cnt=0; cnt<5;cnt++) {
 		if(!fail) {
 			digitalWrite(SUCCESS_TEST, HIGH);
@@ -31,6 +29,7 @@ void printResult() {
 			delay(500);
 		}
 		else {
+			printf("%d\n", FAIL_TEST);
 			digitalWrite(FAIL_TEST, HIGH);
 			delay(500);
 			digitalWrite(FAIL_TEST, LOW);
