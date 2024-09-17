@@ -21,6 +21,23 @@ char* get_Result(int pass){
 	}
 }
 
+void printResult() {
+	for(int cnt=0; cnt<5;cnt++) {
+		if(!fail) {
+			digitalWrite(SUCCESS_TEST, HIGH);
+			delay(500);
+			digitalWrite(SUCCESS_TEST, LOW);
+			delay(500);
+		}
+		else {
+			digitalWrite(FAIL_TEST, HIGH);
+			delay(500);
+			digitalWrite(FAIL_TEST, LOW);
+			delay(500);
+		}
+	}
+}
+
 int main() {
 	char* a;
 
@@ -103,24 +120,9 @@ int main() {
 			a = get_Result(CPUCount);
 			printf("0. CPU                %s\n", a);
 			a = get_Result(MemCount);
-			
 			printf("1. Memory             %s\n", a);
+			printResult();
 			printf("Total Test : %d\n", n);
-
-			for(int cnt=0; cnt<5;cnt++) {
-				if(!fail) {
-					digitalWrite(SUCCESS_TEST, HIGH);
-					delay(500);
-					digitalWrite(SUCCESS_TEST, LOW);
-					delay(500);notp
-				}
-				else {
-					digitalWrite(FAIL_TEST, HIGH);
-					delay(500);
-					digitalWrite(FAIL_TEST, LOW);
-					delay(500);
-				}
-			}
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");
