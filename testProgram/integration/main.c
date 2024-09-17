@@ -12,21 +12,29 @@ bool fail = false;
 
 char* get_Result(int pass){
 	if(pass == 1){
-		fail = true;
+		fail = false;
 		return "\033[32mSuccess\033[0m";
 	}
 	else{
-		fail = false;
+		fail = true;
 		return "\033[31mFailed\033[0m";
 	}
 }
 
-
 int main() {
 	char* a;
+	
+	if (wiringPiSetup() == -1) {
+        	printf("wiringPi ^H0T ä(\n");
+        	exit(1);
+    	}
+
+	pinMode(SUCCESS_TEST, OUTPUT);
+	pinMode(FAIL_TEST, OUTPUT);
+
 	while (1) {
-        int CPUCount = 0;
-        int MemCount = 0;
+		int CPUCount = 0;
+        	int MemCount = 0;
 		int GpioCount = 0;
 		int PwmCount = 0;
 		int SPICount0 = 0;
@@ -43,8 +51,8 @@ int main() {
 		if (m == 0) {
 			printf("Test start\n\n");
 			for (int i = 0; i < n; i++) {
-                CPUCount += cpuTest();
-                MemCount += memoryTest();
+                		CPUCount += cpuTest();
+                		MemCount += memoryTest();
 				GpioCount += GpioTest();
 				resetGPIO();
 				PwmCount += PWMTest();
@@ -58,7 +66,7 @@ int main() {
 			printf("----------------------------------------------\n");
 			printf("Test Summery\n");
 			printf("----------------------------------------------\n");
-            a = get_Result(CPUCount);
+            		a = get_Result(CPUCount);
 			printf("0. CPU                               %s\n", a);
 			a = get_Result(MemCount);
 			printf("1. Memory                            %s\n", a);
@@ -83,11 +91,11 @@ int main() {
 		else if (m == 1) {
 			printf("Test start\n\n");
 
-            for(int i = 0; i < n; i++)
-            {
-                CPUCount += cpuTest();
-                MemCount += memoryTest();
-            }
+            		for(int i = 0; i < n; i++)
+            		{
+                		CPUCount += cpuTest();
+                		MemCount += memoryTest();
+            		}
 
 			printf("---------------------------------\n");
 			printf("Test Summery\n");

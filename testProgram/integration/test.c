@@ -103,8 +103,6 @@ void setup() {
     pinMode(PWM_PIN13, PWM_OUTPUT);
     pinMode(PWM_PIN19, PWM_OUTPUT);
     pinMode(INPUT_PIN, INPUT);
-    pinMode(SUCCESS_TEST, OUTPUT);
-    pinMode(FAIL_TEST, OUTPUT);
 
     pwmSetMode(PWM_MODE_MS);
     pwmSetRange(1024);
