@@ -34,9 +34,9 @@ void printResult() {
 			delay(500);
 			digitalWrite(FAIL_TEST, LOW);
 			delay(500);
-			exit(1);
 		}
 	}
+	if(fail) exit(-1);
 }
 
 int main() {
