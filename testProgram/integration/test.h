@@ -26,9 +26,8 @@
 
 
 
-
-int GpioTest();
 void setup();
+int GpioTest();
 int logPWMInput();
 int PWMTest();
 int spi_loopback_test(int channel);

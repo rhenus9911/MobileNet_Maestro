@@ -12,11 +12,11 @@ bool fail = false;
 
 char* get_Result(int pass){
 	if(pass == 1){
-		fail = false;
+		fail = true;
 		return "\033[32mSuccess\033[0m";
 	}
 	else{
-		fail = true;
+		fail = false;
 		return "\033[31mFailed\033[0m";
 	}
 }
