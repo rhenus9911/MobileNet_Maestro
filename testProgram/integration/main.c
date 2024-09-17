@@ -21,6 +21,15 @@ char* get_Result(int pass){
 }
 
 void printResult() {
+
+	if (wiringPiSetup() == -1) {
+		printf("wiringPi is not connected\n");
+		exit(1);
+	}
+
+	pinMode(SUCCESS_TEST, OUTPUT);
+	pinMode(FAIL_TEST, OUTPUT);
+
 	for(int cnt=0; cnt<5;cnt++) {
 		if(!fail) {
 			digitalWrite(SUCCESS_TEST, HIGH);
@@ -29,7 +38,6 @@ void printResult() {
 			delay(500);
 		}
 		else {
-			printf("%d\n", FAIL_TEST);
 			digitalWrite(FAIL_TEST, HIGH);
 			delay(500);
 			digitalWrite(FAIL_TEST, LOW);
@@ -42,15 +50,7 @@ void printResult() {
 int main() {
 	char* a;
 
-	fail = false;
-
-	if (wiringPiSetup() == -1) {
-		printf("wiringPi is not connected\n");
-		exit(1);
-	}
-	
-	pinMode(SUCCESS_TEST, OUTPUT);
-	pinMode(FAIL_TEST, OUTPUT);
+	fail = false;	
 
 	while (1) {
         int CPUCount = 0;
@@ -63,8 +63,6 @@ int main() {
 		int EthernetCount = 0;
 		int blueCount = 0;
 		int i2cCount = 0;
-		digitalWrite(SUCCESS_TEST, LOW);
-		digitalWrite(FAIL_TEST, LOW);
 		printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
 		printf("Test Num Select: ");
 		scanf("%d", &m);
