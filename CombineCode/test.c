@@ -52,6 +52,9 @@
 #define STREAM_ARRAY_SIZE 100000000
 #define NTIMES 20
 
+#define SUCCESS 27
+#define FAIL 28
+
 int funcCheck[5] = { 0 };
 
 double* array;
@@ -85,6 +88,7 @@ int GpioTest() {
     
     if (check == 1) {
         printf("\033[32m GPIO Success\033[0m\n");
+        digitalWrite(SUCCESS, HIGH);
         return 1;
         }
     else return 0;

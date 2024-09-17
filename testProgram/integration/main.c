@@ -35,9 +35,6 @@ int main() {
 		int EthernetCount = 0;
 		int blueCount = 0;
 		int i2cCount = 0;
-		pinMode(SUCCESS_TEST, OUTPUT);
-		pinMode(FAIL_TEST, OUTPUT);
-
 		digitalWrite(SUCCESS_TEST, LOW);
 		digitalWrite(FAIL_TEST, LOW);
 		printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
@@ -98,9 +95,17 @@ int main() {
 			a = get_Result(CPUCount);
 			printf("0. CPU                %s\n", a);
 			a = get_Result(MemCount);
-			if(a == 1) fail = true;
+			
 			printf("1. Memory             %s\n", a);
 			printf("Total Test : %d\n", n);
+
+			printf("%d\n", fail);
+			if(!fail) {
+				digitalWrite(SUCCESS_TEST, HIGH);
+			}
+			else {
+				digitalWrite(FAIL_TEST, HIGH);
+			}
 			delay(300000);
 		}
 		else if (m == 2) {
