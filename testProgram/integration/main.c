@@ -112,7 +112,7 @@ int main() {
 					digitalWrite(SUCCESS_TEST, HIGH);
 					delay(500);
 					digitalWrite(SUCCESS_TEST, LOW);
-					delay(500);notp
+					delay(500);
 				}
 				else {
 					digitalWrite(FAIL_TEST, HIGH);
