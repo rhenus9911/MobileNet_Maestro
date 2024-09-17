@@ -16,6 +16,7 @@ char* get_Result(int pass){
 
 int main() {
 	char* a;
+	bool fail = false;
 	while (1) {
         int CPUCount = 0;
         int MemCount = 0;
@@ -27,6 +28,8 @@ int main() {
 		int EthernetCount = 0;
 		int blueCount = 0;
 		int i2cCount = 0;
+		digitalWrite(SUCCESS, LOW);
+		digitalWrite(FAIL, LOW);
 		printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
 		printf("Test Num Select: ");
 		scanf("%d", &m);
@@ -83,10 +86,20 @@ int main() {
 			printf("Test Summery\n");
 			printf("---------------------------------\n");
 			a = get_Result(CPUCount);
+			if(a == 1) fail = true;
 			printf("0. CPU                %s\n", a);
 			a = get_Result(MemCount);
+			if(a == 1) fail = true;
 			printf("1. Memory             %s\n", a);
+
+			if(!fail) {
+				digitalWrite(FAIL, HIGH);
+			}
+			else {
+				digitalWrite(SUCCESS, HIGH);
+			}
 			printf("Total Test : %d\n", n);
+			delay(3000);
 		}
 		else if (m == 2) {
 			printf("Test start\n\n");

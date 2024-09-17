@@ -52,7 +52,13 @@
 #define STREAM_ARRAY_SIZE 100000000
 #define NTIMES 20
 
+#define SUCCESS 27
+#define FAIL 28
+
 int funcCheck[5] = { 0 };
+
+pinMode(SUCCESS, OUTPUT);
+pinMode(FAIL, OUTPUT);
 
 double* array;
 static double a[STREAM_ARRAY_SIZE];
@@ -63,7 +69,7 @@ int GpioTest() {
     // wiringPi 0T
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
-        return 1;
+        return 0;
     }
     int pins[16] = { 7, 0, 2, 3, 21, 22, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
     int check = 1;
