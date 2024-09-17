@@ -34,6 +34,7 @@ void printResult() {
 			delay(500);
 			digitalWrite(FAIL_TEST, LOW);
 			delay(500);
+			exit(1);
 		}
 	}
 }
@@ -42,7 +43,7 @@ int main() {
 	char* a;
 
 	if (wiringPiSetup() == -1) {
-		printf("wiringPi ^H0T ä(\n");
+		printf("wiringPi is not connected\n");
 		exit(1);
 	}
 	
@@ -121,6 +122,7 @@ int main() {
 			printf("0. CPU                %s\n", a);
 			a = get_Result(MemCount);
 			printf("1. Memory             %s\n", a);
+
 			printResult();
 			printf("Total Test : %d\n", n);
 		}
@@ -138,6 +140,8 @@ int main() {
 			printf("0. GPIO               %s\n", a);
 			a = get_Result(PwmCount);
 			printf("1. PWM                %s\n", a);
+			
+			printResult();
 			printf("Total Test : %d\n", n);
 		}
 		else if (m == 3) {
@@ -155,6 +159,8 @@ int main() {
 				printf("1. SPI1               %s\n", a);
 				a = get_Result(i2cCount);
 				printf("2. I2C                %s\n", a);
+
+				printResult();
 				printf("Total Test : %d\n", n);
 			}
 		}
@@ -173,6 +179,8 @@ int main() {
 				printf("1. Ethernet           %s\n", a);
 				a = get_Result(blueCount);
 				printf("2. Bluetooth          %s\n", a);
+
+				printResult();
 				printf("Total Test : %d\n", n);
 
 			}
