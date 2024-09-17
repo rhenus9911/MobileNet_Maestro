@@ -8,18 +8,22 @@
 
 int n = 1;
 int m;
+bool fail = false;
 
 char* get_Result(int pass){
 	if(pass == 1){
+		fail = false;
 		return "\033[32mSuccess\033[0m";
-		}
-	else return "\033[31mFailed\033[0m";
+	}
+	else{
+		fail = true;
+		return "\033[31mFailed\033[0m";
+	}
 }
 
 
 int main() {
 	char* a;
-	bool fail = false;
 	while (1) {
         int CPUCount = 0;
         int MemCount = 0;
@@ -31,6 +35,9 @@ int main() {
 		int EthernetCount = 0;
 		int blueCount = 0;
 		int i2cCount = 0;
+		pinMode(SUCCESS_TEST, OUTPUT);
+		pinMode(FAIL_TEST, OUTPUT);
+
 		digitalWrite(SUCCESS_TEST, LOW);
 		digitalWrite(FAIL_TEST, LOW);
 		printf("0: All Test 1: CPU Test 2: GPIO Test 3: I2C/SPI Test 4: mobile Test 5: Exit\n");
