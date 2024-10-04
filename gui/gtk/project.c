@@ -26,20 +26,21 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	
 	GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	GtkWidget *all_button = gtk_button_new_with_label("All");
-	gtk_widget_set_margin_top(cpu_button, 35);
+	gtk_widget_set_margin_top(all_button, 35);
 
 	GtkWidget *cpu_button = gtk_button_new_with_label("CPU");
+	gtk_widget_set_margin_top(cpu_button, 5);
+
+	GtkWidget *gpio_button = gtk_button_new_with_label("GPIO");
 	gtk_widget_set_margin_top(gpio_button, 5);
 
-	GtkWidget *i2c_button = gtk_button_new_with_label("GPIO");
+	GtkWidget *i2c_button = gtk_button_new_with_label("I2C/SPI");
 	gtk_widget_set_margin_top(i2c_button, 5);
-
-	GtkWidget *mobile_button = gtk_button_new_with_label("I2C/SPI");
-	gtk_widget_set_margin_top(mobile_button, 5);
 
 	GtkWidget *mobile_button = gtk_button_new_with_label("Mobile");
         gtk_widget_set_margin_top(mobile_button, 5);
 
+	gtk_box_append(GTK_BOX(sidebar), all_button);
 	gtk_box_append(GTK_BOX(sidebar), cpu_button);
 	gtk_box_append(GTK_BOX(sidebar), gpio_button);
 	gtk_box_append(GTK_BOX(sidebar), i2c_button);
