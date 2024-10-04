@@ -3,6 +3,7 @@
 typedef struct {
 	GtkTextBuffer *result_buffer;
 	GtkTextBuffer *log_buffer;
+	GtkTextBuffer *console_buffer;
 } Buffers;
 
 static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
@@ -10,9 +11,14 @@ static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 
 	const char *result_output = "Result: Hello World\n";
 	const char *log_output = "Log: Button clicked\n";
+	const char *console_output = "Console: CPU button clicked\n";
 
 	gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
 	gtk_text_buffer_set_text(buffers->log_buffer, log_output, -1);
+
+	GtkTextIter end;
+	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
+	gtk_text_buffer_insert(buffers->console_buffer, &end, console_output, -1);
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -80,15 +86,32 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	gtk_widget_set_hexpand(notebook, TRUE);
 	gtk_widget_set_vexpand(notebook, TRUE);
 
-	GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_append(GTK_BOX(main_box), sidebar);
-	gtk_box_append(GTK_BOX(main_box), notebook);
+	GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	GtkWidget *content_area = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_box_append(GTK_BOX(content_area), sidebar);
+	gtk_box_append(GTK_BOX(content_area), notebook);
+
+	/*
+	 * console
+	 */
+
+	GtkWidget *console_view = gtk_text_view_new();
+	GtkTextBuffer *console_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(console_view));
+
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(console_view), FALSE);
+	GtkWidget *console_scroll = gtk_scrolled_window_new();
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(console_scroll), console_view);
+	gtk_widget_set_size_request(console_scroll, -1, 150);
+
+	gtk_box_append(GTK_BOX(main_box), content_area);
+	gtk_box_append(GTK_BOX(main_box), console_scroll);
 
 	gtk_window_set_child(GTK_WINDOW(window), main_box);
 
 	Buffers *buffers = g_new(Buffers, 1);
 	buffers->result_buffer = result_buffer;
 	buffers->log_buffer = log_buffer;
+	buffers->console_buffer = console_buffer;
 
 	g_signal_connect(cpu_button, "clicked", G_CALLBACK(cpu_button_clicked), buffers);
 	gtk_widget_show(window);
