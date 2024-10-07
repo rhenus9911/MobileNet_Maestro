@@ -24,10 +24,18 @@ static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 	//const char *result_output = "Result: Hello World\n";
 	//const char *log_output = "Log: Button clicked\n";
 	const char *console_output = "Console: CPU button clicked\n";
-
+	
 	GtkTextIter end;
 	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
-	gtk_text_buffer_insert(buffers->console_buffer, &end, console_output, -1);
+
+	GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(buffers->console_buffer);
+	GtkTextTag *green_tag = gtk_text_tag_table_lookup(tag_table, "green_fg");
+	if(green_tag == NULL) {
+		green_tag = gtk_text_tag_new("green_fg");
+		g_object_set(green_tag, "foreground", "green", NULL);
+		gtk_text_tag_table_add(tag_table, green_tag);
+	}
+	gtk_text_buffer_insert_with_tags_by_name(buffers->console_buffer, &end, console_output, -1, "green_fg", NULL);
 
 	free(output);
 }
