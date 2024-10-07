@@ -1,4 +1,7 @@
 #include <gtk/gtk.h>
+#include <string.h>
+#include <stdlib.h>
+#include "test.h"
 
 typedef struct {
 	GtkTextBuffer *result_buffer;
@@ -9,16 +12,43 @@ typedef struct {
 static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 	Buffers *buffers = (Buffers *)user_data;
 
-	const char *result_output = "Result: Hello World\n";
-	const char *log_output = "Log: Button clicked\n";
-	const char *console_output = "Console: CPU button clicked\n";
+	char *output = print_sample(1);
 
-	gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
-	gtk_text_buffer_set_text(buffers->log_buffer, log_output, -1);
+	char *result_output = strstr(output, "Result");
+	if(result_output != NULL) {
+		gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
+		*result_output = '\0';
+		gtk_text_buffer_set_text(buffers->log_buffer, output, -1);
+	}
+
+	//const char *result_output = "Result: Hello World\n";
+	//const char *log_output = "Log: Button clicked\n";
+	const char *console_output = "Console: CPU button clicked\n";
 
 	GtkTextIter end;
 	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
 	gtk_text_buffer_insert(buffers->console_buffer, &end, console_output, -1);
+
+	free(output);
+}
+
+static void gpio_button_clicked(GtkButton *button, gpointer user_data) {
+	Buffers *buffers = (Buffers *)user_data;
+	char *output = print_sample(2);
+	char *result_output = strstr(output, "Result");
+	if(result_output != NULL) {
+		gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
+		*result_output = '\0';
+		gtk_text_buffer_set_text(buffers->log_buffer, output, -1);
+	}
+
+	const char *console_output = "Console: GPIO button clicked\n";
+
+	GtkTextIter end;
+	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
+	gtk_text_buffer_insert(buffers->console_buffer, &end, console_output, -1);
+
+	free(output);
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -114,6 +144,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	buffers->console_buffer = console_buffer;
 
 	g_signal_connect(cpu_button, "clicked", G_CALLBACK(cpu_button_clicked), buffers);
+	g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
 	gtk_widget_show(window);
 }
 
