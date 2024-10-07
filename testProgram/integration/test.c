@@ -94,7 +94,7 @@ int GpioTest() {
 
 void setup() {
     if (wiringPiSetup() == -1) {
-        printf("wiringPi 0T ä(\n");
+        printf("wiringPi connect Failed\n");
         exit(1);
     }
 
@@ -124,7 +124,7 @@ double logPWMInput() {
             lowCount++;
         }
 
-        delayMicroseconds(100); // 100usÈä ØÁ
+        delayMicroseconds(100); // 100 micro second
     }
 
     printf("HIGH Count: %d, LOW Count: %d\n", highCount, lowCount);
@@ -149,8 +149,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1Èä \ø %
-
+    sleep(1);
     printf("GPIO13 PWM Test\n");
     pwmWrite(PWM_PIN13, 512);
     printf("input value : %d\n", 512);
@@ -162,7 +161,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1Èä \ø %
+    sleep(1);
 
     printf("GPIO18 PWM Test\n");
     pwmWrite(PWM_PIN18, 512);
@@ -175,7 +174,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1Èä \ø %
+    sleep(1);
     printf("GPIO19 PWM Test\n");
     pwmWrite(PWM_PIN19, 512);
     printf("input value : %d\n", 512);
@@ -187,7 +186,7 @@ int PWMTest() {
         printf("\033[31mPWM Failed\033[0m\n");
         check = 1;
     }
-    sleep(1); // 1Èä \ø %
+    sleep(1);
 
 
     if (check == 1) return 0;
@@ -206,7 +205,7 @@ int spi_loopback_test(int channel) {
     printf("\n");
 
 
-    // SPI\ pt0 ¡  à
+    // SPI/I2C Test
     if (wiringPiSPIDataRW(channel, data, DATA_LENGTH) == -1) {
         printf("SPI communication failed on channel %d!\n", channel);
         return 0;
@@ -232,13 +231,13 @@ int spi_loopback_test(int channel) {
 }
 
 int SPITest_0() {
-    // wiringPi 0T
+    // wiringPi
     if (wiringPiSetup() == -1) {
         printf("wiringPi setup failed!\n");
         return 0;
     }
 
-    // SPI D 0T
+    // SPI
     if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
         printf("SPI setup failed on channel 0!\n");
         return 0;
@@ -249,7 +248,7 @@ int SPITest_0() {
         return 0;
     }
     int n;
-    // D 0 (CE0) L¤¸
+
     n = spi_loopback_test(SPI_CHANNEL_0);
     return n;
 
