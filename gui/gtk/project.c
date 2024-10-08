@@ -9,54 +9,50 @@ typedef struct {
 	GtkTextBuffer *console_buffer;
 } Buffers;
 
+static void add_message_to_console(GtkTextBuffer *console_buffer, const char *message, const char *tag_name) {
+	GtkTextIter end;
+	gtk_text_buffer_get_end_iter(console_buffer, &end);
+	
+	GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(console_buffer);
+	GtkTextTag *tag = gtk_text_tag_table_lookup(tag_table, tag_name);
+	if (tag == NULL) {
+		tag = gtk_text_tag_new(tag_name);
+		const char *color = strcmp(tag_name, "red") == 0 ? "red" : "green";
+		g_object_set(tag, "foreground", tag_name, NULL);
+		gtk_text_tag_table_add(tag_table, tag);
+	}
+	
+	gtk_text_buffer_insert_with_tags_by_name(console_buffer, &end, message, -1, tag_name, NULL);
+	gtk_text_buffer_insert(console_buffer, &end, "\n", -1);
+}
+
 static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 	Buffers *buffers = (Buffers *)user_data;
 
-	char *output = print_sample(1);
+	LogEntry result = cpuNumCheck();
+	if(result.message != NULL) {
+		if(strncmp(result.message, "[LOG]",5) == 0) {
+			gtk_text_buffer_set_text(buffers->log_buffer, result.message, -1);
+		}
 
-	char *result_output = strstr(output, "Result");
-	if(result_output != NULL) {
-		gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
-		*result_output = '\0';
-		gtk_text_buffer_set_text(buffers->log_buffer, output, -1);
+		char *msg_cp = strdup(result.message);
+		char *token = strtok(msg_cp, "\n");
+
+		while (token != NULL) {
+			if (strncmp(token, "[ERROR]", 7) == 0) {
+				add_message_to_console(buffers->console_buffer, token, "red");
+			}
+			else if (strncmp(token, "[SUCCESS]", 9) == 0) {
+				add_message_to_console(buffers->console_buffer, token, "green");
+			}
+			else if (strncmp(token, "[LOG]", 5) == 0) {
+				gtk_text_buffer_set_text(buffers->log_buffer, token, -1);
+			}
+			token = strtok(NULL, "\n");
+		}
+
+		free(msg_cp);
 	}
-
-	//const char *result_output = "Result: Hello World\n";
-	//const char *log_output = "Log: Button clicked\n";
-	const char *console_output = "Console: CPU button clicked\n";
-	
-	GtkTextIter end;
-	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
-
-	GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(buffers->console_buffer);
-	GtkTextTag *green_tag = gtk_text_tag_table_lookup(tag_table, "green_fg");
-	if(green_tag == NULL) {
-		green_tag = gtk_text_tag_new("green_fg");
-		g_object_set(green_tag, "foreground", "green", NULL);
-		gtk_text_tag_table_add(tag_table, green_tag);
-	}
-	gtk_text_buffer_insert_with_tags_by_name(buffers->console_buffer, &end, console_output, -1, "green_fg", NULL);
-
-	free(output);
-}
-
-static void gpio_button_clicked(GtkButton *button, gpointer user_data) {
-	Buffers *buffers = (Buffers *)user_data;
-	char *output = print_sample(2);
-	char *result_output = strstr(output, "Result");
-	if(result_output != NULL) {
-		gtk_text_buffer_set_text(buffers->result_buffer, result_output, -1);
-		*result_output = '\0';
-		gtk_text_buffer_set_text(buffers->log_buffer, output, -1);
-	}
-
-	const char *console_output = "Console: GPIO button clicked\n";
-
-	GtkTextIter end;
-	gtk_text_buffer_get_end_iter(buffers->console_buffer, &end);
-	gtk_text_buffer_insert(buffers->console_buffer, &end, console_output, -1);
-
-	free(output);
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -152,7 +148,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	buffers->console_buffer = console_buffer;
 
 	g_signal_connect(cpu_button, "clicked", G_CALLBACK(cpu_button_clicked), buffers);
-	g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
+	//g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
 	gtk_widget_show(window);
 }
 
@@ -160,7 +156,8 @@ int main(int argc, char **argv) {
 	GtkApplication *app;
 	int status;
 
-	app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_DEFAULT_FLAGS);
+	//app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_DEFAULT_FLAGS);
+	app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_FLAGS_NONE);
 	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
 	status = g_application_run(G_APPLICATION(app), argc, argv);
