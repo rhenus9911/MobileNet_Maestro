@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <string.h>
-//#include <wiringPiSPI.h>
-//#include <wiringPi.h>
-//#include <wiringPiI2C.h>
+#include <wiringPiSPI.h>
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
@@ -74,13 +74,13 @@ LogEntry cpuIPSCheck();
 LogEntry cpuFPCheck();
 
 // Memory
-char *memoryTest();
-char *memoryFuncCheck();
+LogEntry memoryTest();
+LogEntry memoryFuncCheck();
 void readBandWidth();
 void writeBandWidth();
 void copyBandWidth();
-char *memoryBandWidthCheck();
-char *memoryErrorCheck();
+LogEntry memoryBandWidthCheck();
+LogEntry memoryErrorCheck();
 
 
 void setup();
@@ -101,19 +101,7 @@ int bluetoothTest();
 int i2cTest();
 void resetGPIO();
 double timeCheck();
-//int cpuNumCheck();
-//int cpuPerformCheck();
-//int cpuIPSCheck();
-//int cpuFPCheck();
-//int memoryFuncCheck();
-//void readBandWidth();
-//void writeBandWidth();
-//void copyBandWidth();
-//int memoryBandWidthCheck();
-//int memoryErrorCheck();
 char* getColor(int check);
 char* getResult(int check);
-//int cpuTest();
-//int memoryTest();
 
 #endif

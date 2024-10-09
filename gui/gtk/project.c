@@ -26,33 +26,59 @@ static void add_message_to_console(GtkTextBuffer *console_buffer, const char *me
 	gtk_text_buffer_insert(console_buffer, &end, "\n", -1);
 }
 
+static void print_message(Buffers *buffers, LogEntry result) {
+	char *msg_cp = strdup(result.message);
+	char *token = strtok(msg_cp, "\n");
+
+	GtkTextIter end;
+	
+	while (token != NULL) {
+		if (strncmp(token, "[ERROR]", 7) == 0) {
+			add_message_to_console(buffers->console_buffer, token, "red");
+		}
+		else if (strncmp(token, "[SUCCESS]", 9) == 0) {
+			add_message_to_console(buffers->console_buffer, token, "green");
+		}
+		else if (strncmp(token, "[LOG]", 5) == 0) {
+			gtk_text_buffer_get_end_iter(buffers->log_buffer, &end);
+			gtk_text_buffer_insert(buffers->log_buffer, &end, token, -1);
+			gtk_text_buffer_insert(buffers->log_buffer, &end, "\n", -1);
+			
+		}
+		token = strtok(NULL, "\n");
+	}
+	free(msg_cp);
+}
+
 static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 	Buffers *buffers = (Buffers *)user_data;
-
+	
+	// CPU
 	LogEntry result = cpuNumCheck();
 	if(result.message != NULL) {
-		if(strncmp(result.message, "[LOG]",5) == 0) {
-			gtk_text_buffer_set_text(buffers->log_buffer, result.message, -1);
-		}
-
-		char *msg_cp = strdup(result.message);
-		char *token = strtok(msg_cp, "\n");
-
-		while (token != NULL) {
-			if (strncmp(token, "[ERROR]", 7) == 0) {
-				add_message_to_console(buffers->console_buffer, token, "red");
-			}
-			else if (strncmp(token, "[SUCCESS]", 9) == 0) {
-				add_message_to_console(buffers->console_buffer, token, "green");
-			}
-			else if (strncmp(token, "[LOG]", 5) == 0) {
-				gtk_text_buffer_set_text(buffers->log_buffer, token, -1);
-			}
-			token = strtok(NULL, "\n");
-		}
-
-		free(msg_cp);
+		print_message(buffers, result);
 	}
+	if(result.level == LOG_SUCCESS) {
+		result = cpuPerformCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+	if(result.level == LOG_SUCCESS) {
+		result = cpuIPSCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+	if(result.level == LOG_SUCCESS) {
+		result = cpuFPCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	// Memory
+		
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -156,8 +182,8 @@ int main(int argc, char **argv) {
 	GtkApplication *app;
 	int status;
 
-	//app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_DEFAULT_FLAGS);
-	app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_FLAGS_NONE);
+	app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_DEFAULT_FLAGS);
+	//app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_FLAGS_NONE);
 	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
 	status = g_application_run(G_APPLICATION(app), argc, argv);
