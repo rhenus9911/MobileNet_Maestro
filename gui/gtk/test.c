@@ -204,7 +204,8 @@ LogEntry memoryFuncCheck()
 	FILE* fp = popen("sysbench memory --threads=4 run", "r");
 	if(lsmem == NULL)
 	{
-		strcat(result.message, "[ERROR] Memory is not Access\n");
+		strcat(result.message, "[LOG] Memory is not Access\n");
+		strcat(result.message, "[ERROR] Memory Func Check Fail\n");
 		result.level = LOG_ERROR;
 		return result;
 	}
@@ -355,6 +356,582 @@ LogEntry memoryBandWidthCheck()
 
 LogEntry memoryErrorCheck()
 {
+	char *log_save = malloc(2048);
+	memset(log_save, 0, 2048);
+
+	uint8_t p = 0xAA;
+	uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint_8));
+	LogEntry result;
+
+	if(!memory)
+	{
+		strcat(result.message, "[LOG] Memory allocation failed\n");
+		strcat(result.message, "[ERROR] Memory Error Check Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+	}
+	
+	for(size_t i=0; i<BUFFER_SIZE;i++)
+	{
+		memory[i] = p;
+	}
+	for(size_t i=0;i<BUFFER_SIZE;i++)
+	{
+		if(memory[i] != p)
+		{
+			char mem_str[1024];
+			sprintf(mem_str, "[LOG] Memory error at index %zu: expected 0x%02X, got 0x%02X\n", i, p, memory[i]);
+			strcat(log_save, "[ERROR] Memory error Check Fail\n");
+			strcat(result.message, log_save);
+			result.level = LOG_ERROR;
+
+			return result;
+		}
+
+	}
+	
+	strcat(log_save, "[SUCCESS] Memory error Check Clear\n");
+	result.message = log_save;
+	result.level = LOG_SUCCESS;
+
+	return result;
+}
+
+void resetGPIO()
+{
+	int pins[11] = { 0, 2, 3, 25, 4, 5, 6, 31, 27, 28, 29 };
+	int HighPin[5] = { 7, 21, 22, 15, 16 };
+	for (int i = 0; i < 11; i++)
+	{
+		pinMode(pins[i], INPUT);
+		digitalWrite(pins[i], LOW);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		pinMode(HighPin[i], INPUT);
+		digitalWrite(pins[i], HIGH);
+	}
+	printf("GPIO reset completed.\n");
+}
+
+LogEntry GpioTest()
+{
+	char *log_save = malloc(2048);
+	memset(log_save, 0, 2048);
+	char gpio_str[1024];
+
+	LogEntry result;
+
+	if(wiringPiSetup() == -1)
+	{
+		strcat(result.message, "[LOG] wiringPi setup Failed!\n");
+		strcat(result.message, "[ERROR] GPIO Test Fail\n");
+		result.level = LOG_ERROR;
+		resetGPIO();
+
+		return result;
+	}
+	int pins[16] = { 7, 0, 2, 3, 21, 22, 25, 15, 16, 4, 5, 6, 31, 27, 28, 29 };
+	for (int i = 0; i < 16; i++)
+	{
+		pinMode(pins[i], OUTPUT);
+		digitalWrite(pins[i], HIGH);
+	}
+	usleep(300000);
+        if (digitalRead(pins[i]) == LOW)
+	{
+		sprintf(gpio_str, "[LOG] GPIO %d failed\n", pins[i]);
+		strcat(log_save, gpio_str);
+		strcat(log_save, "[ERROR] GPIO Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		resetGPIO();
+
+		return result;
+	}
+	digitalWrite(pins[i], LOW);
+	usleep(300000);
+
+	strcat(log_save, "[LOG] GPIO Success\n");
+	strcat(log_save, "[SUCCESS] GPIO Test Clear\n");
+	result.message = log_save;
+	result.level = LOG_SUCCESS;
+	resetGPIO();
+
+	return result;
+}
+
+bool setup()
+{
+	if (wiringPiSetup() == -1)
+	{
+		return false;
+	}
+	pinMode(PWM_PIN18, PWM_OUTPUT);
+	pinMode(PWM_PIN12, PWM_OUTPUT);
+	pinMode(PWM_PIN13, PWM_OUTPUT);
+	pinMode(PWM_PIN19, PWM_OUTPUT);
+	pinMode(INPUT_PIN, INPUT);
+
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetRange(1024);
+	pwmSetClock(32);
+	return true;
+}
+
+double logPWMInput(char *log_save)
+{
+	int value;
+	int highCount = 0;
+	int lowCount = 0;
+	int totalCount = 1024;
+	char log_str[1024];
+
+	for (int i = 0; i < totalCount; i++)
+	{
+		value = digitalRead(INPUT_PIN);
+		if (value == HIGH)
+		{
+			highCount++;
+		}
+		else
+		{
+			lowCount++;
+		}
+		delayMicroseconds(100);
+	}
+	
+	sprintf(log_str, "HIGH Count: %d, LOW Count: %d\n", highCount, lowCount);
+	strcat(log_save, log_str);
+	log_str[0] = '\0';
+	sprintf(log_str, "HIGH Percentage: %.2f%%, LOW Percentage: %.2f%%\n", (highCount / (float)totalCount) * 100, (lowCount / (float)totalCount) * 100);
+	strcat(log_save, log_str);
+
+	return highCount / (float)totalCount * 100;
+}
+
+bool PWMWriteCheck(char *log_save, int pin)
+{
+	char pin_str[1024];
+
+	if(pin == PWM_PIN12) strcat(log_save, "GPIO12 PWM Test\n");
+	else if(pin == PWM_PIN13) strcat(log_save, "GPIO13 PWM Test\n");
+	else if(pin == PWM_PIN18) strcat(log_save, "GPIO18 PWM TEst\n");
+	else if(pin == PWM_PIN19) strcat(log_save, "GPIO19 PWM Test\n");
+	pwmWrite(pin, 0);
+	sprintf(pin_str, "input value : %d\n", 512);
+	strcat(log_svae, pin_str);
+	n = logPWMInput();
+	if (n >= 49 && n <= 51)
+	{
+		strcat(log_save, "[LOG] PWM Success\n");
+		return true;
+	}
+	else
+	{
+		strcat(log_save, "[LOG] PWM Failed\n");
+		return false;
+	}
+}
+
+LogEntry PWMTest()
+{
+	double  n;
+	char *log_save = malloc(2048);
+	memset(log_save, 0, 2048);
+
+	LogEntry result;
+	
+	if(!setup())
+	{
+		strcat(result.message, "[LOG] wiringPi connect Failed\n");
+		strcat(result.message, "[ERROR] PWM Test Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+	}
+
+	if(!PWMWriteCheck(log_save, PWM_PIN12))
+	{
+		strcat(log_save, "[ERROR] PWM Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+	sleep(0.5);
+	if(!PWMWriteCheck(log_save, PWM_PIN13))
+        {
+                strcat(log_save, "[ERROR] PWM Test Fail\n");
+                result.message = log_save;
+                result.level = LOG_ERROR;
+                return result;
+        }
+	sleep(0.5);
+	if(!PWMWriteCheck(log_save, PWM_PIN18))
+        {
+                strcat(log_save, "[ERROR] PWM Test Fail\n");
+                result.message = log_save;
+                result.level = LOG_ERROR;
+                return result;
+        }
+	sleep(0.5);
+	if(!PWMWriteCheck(log_save, PWM_PIN19))
+        {
+                strcat(log_save, "[ERROR] PWM Test Fail\n");
+                result.message = log_save;
+                result.level = LOG_ERROR;
+                return result;
+        }
+
+	strcat(log_save, "[SUCCESS] PWM Test Clear\n");
+	result.message = log_save;
+	result.level = LOG_SUCCESS;
+	return result;
+}
+
+bool spi_loopback_test(char *log_save, int channel)
+{
+	unsigned char data[DATA_LENGTH] = "HelloSPI!";
+	unsigned char receivedData[DATA_LENGTH] = { 0 };
+	char cn_str[1024];	
+
+	sprintf(cn_str, "[LOG] Testing SPI Channel %d\n", channel);
+	strcat(log_save, cn_str);
+	cn_str[0] = '\0';
+
+	strcat(log_save, "[LOG] Sending data: ");
+	for (int i = 0; i < DATA_LENGTH; i++)
+	{
+		char tmp_str[1024];
+		sprintf(tmp_str, "%02X ", data[i]);
+		strcat(log_save, tmp_str);
+	}
+    	strcat(log_save, "\n");
+
+    	if (wiringPiSPIDataRW(channel, data, DATA_LENGTH) == -1)
+	{
+		sprintf(cn_str, "[LOG] SPI communication failed on channel %d!\n", channel);
+		strcat(log_save, cn_str);
+		return false;
+	}
+	strcat(log_svae, "[LOG] Received data: ");
+	for (int i = 0; i < DATA_LENGTH; i++)
+	{
+		char tmp_str[1024];
+		sprintf(tmp_str, "%02X ", data[i]);
+		strcat(log_save, tmp_stR);
+		receivedData[i] = data[i];
+	}
+    	strcat(log_save, "\n");
+	
+	if (strncmp((char*)receivedData, "HelloSPI!", DATA_LENGTH) == 0)
+	{
+		sprintf(cn_str, "[LOG] SPI test passed on channel %d!\n", channel);
+		strcat(log_save, cn_str);
+		return true;
+	}
+	else
+	{
+        	sprintf(cn_str, "[LOG] SPI test failed on channel %d!\n", channel);
+		strcat(log_save, cn_str);
+        	return false;
+	}
+}
+
+LogEntry SPITest()
+{
+	char *log_save = malloc(2048);
+	memset(0, log_save, 2048);
+	
+	LogEntry result;
+	
+	if (wiringPiSetup() == -1)
+	{
+		strcat(result.message, "[LOG] wiringPi setup failed!\n");
+		strcat(result.message, "[ERROR] SPI Test Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+    	}
+    	if (wiringPiSPISetup(SPI_CHANNEL_0, SPI_SPEED) == -1) {
+		
+		strcat(result.message, "[LOG] SPI setup failed on channel 0!\n");
+		strcat(result.message, "[ERROR] SPI Test Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+    	}
+	
+	if (wiringPiSPISetup(SPI_CHANNEL_1, SPI_SPEED) == -1)
+	{
+		strcat(result.message, "[LOG] SPI setup failed on channel 1!\n");
+		strcat(result.message, "[ERROR] SPI Test Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+	}
+	if(!spi_loopback_test(log_save, SPI_CHANNEL_0))
+	{
+		strcat(log_save, "[ERROR] SPI Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+	if(!spi_loopback_test(log_save, SPI_CHANNEL_1))
+	{
+                strcat(log_save, "[ERROR] SPI Test Fail\n");
+                result.message = log_save;
+                result.level = LOG_ERROR;
+                return result;
+        }
+	strcat(log_save, "[SUCCESS] SPI Test Clear\n");
+	result.message = log_save;
+	result.level = LOG_SUCCESS;
+	return result;
+}
+
+LogEntry wifiTest()
+{
+	char *log_save = malloc(2048);
+	memset(log_save, 0, 2048);
+
+	char buffer[BUFFER_SIZE];
+    	FILE* fp;
+    	int is_connected = 0;
+
+	LogEntry result;
+
+    	fp = popen("iwconfig 2>&1", "r");
+    	if (fp == NULL)
+	{
+        	strcat(result.message, "[LOG] Failed to run iwconfig\n");
+		strcat(result.message, "[ERROR] Wi-Fi Test Fail\n");
+		result.level = LOG_ERROR;
+       		return result;
+    	}
+    	while (fgets(buffer, sizeof(buffer), fp) != NULL)
+	{
+		if (strstr(buffer, "ESSID") != NULL)
+		{
+			if (strstr(buffer, "off/any") == NULL)
+			{
+				is_connected = 1;
+				strcat(log_save, "[LOG] Connected to Wi-Fi network.\n");
+				strcat(log_save,  buffer);
+				break;
+			}
+		}
+	}
+    	if (is_connected)
+	{
+		while (fgets(buffer, sizeof(buffer), fp) != NULL)
+		{
+			strcat(log_save, buffer);
+		}
+		strcat(log_save, "[SUCCESS] Wi-Fi Test Clear\n";
+		result.message = log_save;
+		result.level = LOG_SUCCESS;
+	}
+	else
+	{
+		strcat(log_save, "[LOG] Not connected to any Wi-Fi network.\n");
+		strcat(log_save, "[ERROR] Wi-Fi Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+	}
+	pclose(fp);
+	return result;
+}
+
+// continue
+char* get_ip_address() {
+    struct ifaddrs* ifaddr, * ifa;
+    char* ip_address = (char*)malloc(NI_MAXHOST * sizeof(char));
+    if (ip_address == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    int family, s;
+
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        exit(EXIT_FAILURE);
+    }
+
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_INET) { // IPv4
+            s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ip_address, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+            if (s != 0) {
+                printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                freeifaddrs(ifaddr);
+                free(ip_address);
+                exit(EXIT_FAILURE);
+            }
+            if (strcmp(ifa->ifa_name, "eth0") == 0 || strcmp(ifa->ifa_name, "wlan0") == 0) {
+                printf("Interface: %s\tAddress: %s\n", ifa->ifa_name, ip_address);
+                freeifaddrs(ifaddr);
+                return ip_address;
+            }
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    free(ip_address);
+    return NULL;
+}
+
+void check_network_interface() {
+    printf("Checking network interface with ifconfig...\n");
+    int result = system("ifconfig eth0");
+    if (result != 0) {
+        printf("\033[31mFailed to execute ifconfig.\033[0m\n");
+    }
 }
 
 
+void ping_test(const char* ip_address) {
+    char command[256];
+    snprintf(command, sizeof(command), "ping -c 4 %s", ip_address);
+    printf("Pinging %s...\n", ip_address);
+    int result = system(command);
+    if (result != 0) {
+        printf("\033[31mPing test failed.\033[0m\n");
+    }
+}
+
+void iperf_test(const char* server_ip) {
+    char command[256];
+    snprintf(command, sizeof(command), "iperf3 -c %s", server_ip);
+    printf("Testing network speed with iperf3 to server %s...\n", server_ip);
+    int result = system(command);
+    if (result != 0) {
+        printf("\033[31miperf3 test failed.\033[0m\n");
+    }
+}
+
+int EthernetTest() {
+    // 1. $¸Ìl $^U Ux
+    check_network_interface();
+
+    // 2. $¸Ìl ð° L¤¸
+    const char* external_ip = "8.8.8.8";
+    ping_test(external_ip);
+
+    // 3. |<88> ¬ ^LtX IP ü<8c> Ux ^O $¸Ìl <8d>Ä L¤¸
+    char* raspberry_pi_ip = get_ip_address();
+    if (raspberry_pi_ip != NULL) {
+        iperf_test(raspberry_pi_ip);
+        free(raspberry_pi_ip);
+        return 1;
+    }
+    else {
+        printf("\033[31mFailed to retrieve Raspberry Pi IP address.\033[0m\n");
+        return 0;
+    }
+}
+
+int bluetoothTest() {
+    inquiry_info* ii = NULL;
+    int max_rsp, num_rsp;
+    int dev_id, sock, len, flags;
+    char addr[19] = { 0 };
+    char name[248] = { 0 };
+    int connected_devices = 0;
+    printf("bluetoothTest Start\n");
+    dev_id = hci_get_route(NULL);
+    if (dev_id < 0) {
+        perror("hci_get_route");
+        exit(1);
+    }
+
+    sock = hci_open_dev(dev_id);
+    if (sock < 0) {
+        perror("hci_open_dev");
+        exit(1);
+    }
+
+    len = 8;
+    max_rsp = 255;
+    flags = IREQ_CACHE_FLUSH;
+    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
+
+    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
+    if (num_rsp < 0) {
+        perror("hci_inquiry");
+        exit(1);
+    }
+
+    for (int i = 0; i < num_rsp; i++) {
+        ba2str(&(ii + i)->bdaddr, addr);
+        memset(name, 0, sizeof(name));
+        if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name), name, 0) < 0)
+            strcpy(name, "[unknown]");
+
+        // Check if the device is connected
+        struct sockaddr_rc addr_rc = { 0 };
+        int status;
+        int rfcomm_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+        addr_rc.rc_family = AF_BLUETOOTH;
+        addr_rc.rc_channel = 1;
+        str2ba(addr, &addr_rc.rc_bdaddr);
+
+        status = connect(rfcomm_sock, (struct sockaddr*)&addr_rc, sizeof(addr_rc));
+        if (status == 0) {
+            printf("Device Address: %s\n", addr);
+            printf("Device Name: %s\n", name);
+            printf("Device is connected.\n");
+            connected_devices++;
+        }
+        close(rfcomm_sock);
+    }
+    if (connected_devices == 0) {
+        printf("\033[31mNo connected devices.\033[0m\n");
+        return 0;
+    }
+    else return 1;
+
+    free(ii);
+    close(sock);
+}
+
+int i2cTest() {
+    int fd;
+    int deviceAddress = 0x27; // I2C ¥X ü<8c>
+    //int bus = 1; // I2C <84>¤ <88>8
+    int check = 1;
+    // I2C ¥XÐ ð°
+    if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0) {
+        perror("I2C failed");
+        exit(1);
+    }
+
+    // I2C ¥XÐ^\ pt0 }0
+    int readValue = wiringPiI2CRead(fd);
+    if (readValue < 0) {
+        perror("\033[31mI2C Read Fail\033[0m\n");
+        check = 0;
+
+    }
+    else {
+        printf("Read Data: 0x%x\n", readValue);
+        printf("\033[32mI2C Read Success\033[0m\n");
+
+    }
+
+    // I2C ¥XÐ pt0 ð0
+    int writeValue = 0x88; // ø pt0
+    if (wiringPiI2CWrite(fd, writeValue) < 0) {
+        perror("\033[31mI2C Write Fail\033[0m\n");
+        check = 0;
+    }
+    else {
+        printf("Wirte Data: 0x%x\n", writeValue);
+        printf("\033[32mI2C Write Success\033[0m\n");
+
+    }
+    if(check == 1) return 1;
+    else return 0;
+
+}

@@ -82,15 +82,15 @@ void copyBandWidth();
 LogEntry memoryBandWidthCheck();
 LogEntry memoryErrorCheck();
 
-
+// GPIO
 void setup();
-int GpioTest();
-int logPWMInput();
-int PWMTest();
-int spi_loopback_test(int channel);
-int SPITest_0();
-int SPITest_1();
-int wifiTest();
+LogEntry GpioTest();
+LogEntry logPWNInput();
+LogEntry PWMTest();
+LogEntry spi_loopback_test(int channel);
+LogEntry SPITest_0();
+LogEntry SPITest_1();
+
 //이더넷부터
 char* get_ip_address();
 void check_network_interface();
