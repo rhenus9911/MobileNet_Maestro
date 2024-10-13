@@ -74,7 +74,6 @@ LogEntry cpuIPSCheck();
 LogEntry cpuFPCheck();
 
 // Memory
-LogEntry memoryTest();
 LogEntry memoryFuncCheck();
 void readBandWidth();
 void writeBandWidth();
@@ -83,25 +82,22 @@ LogEntry memoryBandWidthCheck();
 LogEntry memoryErrorCheck();
 
 // GPIO
-void setup();
-LogEntry GpioTest();
-LogEntry logPWNInput();
-LogEntry PWMTest();
-LogEntry spi_loopback_test(int channel);
-LogEntry SPITest_0();
-LogEntry SPITest_1();
-
-//이더넷부터
-char* get_ip_address();
-void check_network_interface();
-void ping_test(const char* ip_address);
-void iperf_test(const char* server_ip);
-int EthernetTest();
-int bluetoothTest();
-int i2cTest();
+bool setup();
 void resetGPIO();
-double timeCheck();
-char* getColor(int check);
-char* getResult(int check);
+LogEntry GpioTest();
+double logPWNInput(char *log_save);
+LogEntry PWMTest();
+bool spi_loopback_test(char *log_save, int channel);
+LogEntry SPITest();
+
+//Mobile
+LogEntry wifiTest();
+char* get_ip_address(char *log_save);
+bool check_network_interface(char *log_save);
+bool ping_test(const char* ip_adress, char *log_save);
+bool iperf_test(const char* server_ip, char *log_save);
+LogEntry ethernetTest();
+LogEntry bluetoothTest();
+LogEntry i2cTest();
 
 #endif

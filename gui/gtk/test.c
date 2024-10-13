@@ -739,199 +739,286 @@ LogEntry wifiTest()
 	return result;
 }
 
-// continue
-char* get_ip_address() {
-    struct ifaddrs* ifaddr, * ifa;
-    char* ip_address = (char*)malloc(NI_MAXHOST * sizeof(char));
-    if (ip_address == NULL) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
-    int family, s;
+char* get_ip_address(char *log_save)
+{
+	struct ifaddrs* ifaddr, * ifa;
+    	char* ip_address = (char*)malloc(NI_MAXHOST * sizeof(char));
+	char info_str[1024];
+	if (ip_address == NULL)
+	{
+		return NULL;
+	}
+	int family, s;
 
-    if (getifaddrs(&ifaddr) == -1) {
-        perror("getifaddrs");
-        exit(EXIT_FAILURE);
-    }
+	if (getifaddrs(&ifaddr) == -1)
+	{
+		strcat(log_save, "[LOG] Fail getifaddrs");
+		return NULL;
+	}
+	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == NULL)
+			continue;
 
+		family = ifa->ifa_addr->sa_family;
 
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL)
-            continue;
-
-        family = ifa->ifa_addr->sa_family;
-
-        if (family == AF_INET) { // IPv4
-            s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ip_address, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-            if (s != 0) {
-                printf("getnameinfo() failed: %s\n", gai_strerror(s));
-                freeifaddrs(ifaddr);
-                free(ip_address);
-                exit(EXIT_FAILURE);
-            }
-            if (strcmp(ifa->ifa_name, "eth0") == 0 || strcmp(ifa->ifa_name, "wlan0") == 0) {
-                printf("Interface: %s\tAddress: %s\n", ifa->ifa_name, ip_address);
-                freeifaddrs(ifaddr);
-                return ip_address;
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
-    free(ip_address);
-    return NULL;
+		if (family == AF_INET)
+		{ // IPv4
+			s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), ip_address, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+		  	if (s != 0)
+		  	{
+				sprintf(info_str, "[LOG] getnameinfo() failed: %s\n", gai_strerror(s));
+				strcat(log_save, info_str);
+				freeifaddrs(ifaddr);
+				free(ip_address);
+				return NULL;
+		  	}
+      		  	if (strcmp(ifa->ifa_name, "eth0") == 0 || strcmp(ifa->ifa_name, "wlan0") == 0)
+		  	{
+				sprintf(info_str, "[LOG] Interface: %s\tAddress: %s\n", ifa->ifa_name, ip_address);
+				strcat(log_save, info_str);
+				freeifaddrs(ifaddr);
+				return ip_address;
+			}
+		}
+	}
+   	freeifaddrs(ifaddr);
+	free(ip_address);
+	return NULL;
 }
 
-void check_network_interface() {
-    printf("Checking network interface with ifconfig...\n");
-    int result = system("ifconfig eth0");
-    if (result != 0) {
-        printf("\033[31mFailed to execute ifconfig.\033[0m\n");
-    }
+bool check_network_interface(char *log_save)
+{
+	strcat(log_save, "[LOG] Checking network interface with ifconfig...\n");
+	int result = system("ifconfig eth0");
+	if (result != 0)
+	{
+	strcat(log_save, "[LOG] Failed to execute ifconfig.\n");
+		return false;
+	}
+	return true;
 }
 
 
-void ping_test(const char* ip_address) {
-    char command[256];
-    snprintf(command, sizeof(command), "ping -c 4 %s", ip_address);
-    printf("Pinging %s...\n", ip_address);
-    int result = system(command);
-    if (result != 0) {
-        printf("\033[31mPing test failed.\033[0m\n");
-    }
+bool ping_test(const char* ip_address, char *log_save)
+{
+	char cmd_str[1024];
+	char command[256];
+	snprintf(command, sizeof(command), "ping -c 4 %s", ip_address);
+	sprintf(cmd_str, "[LOG] Pinging %s...\n", ip_address);
+	strcat(log_save, cmd_str);
+    	int result = system(command);
+	if (result != 0)
+	{
+		strcat(log_save, "[LOG] Ping test failed.\n");
+		return false;
+	}
+	return true;
 }
 
-void iperf_test(const char* server_ip) {
-    char command[256];
-    snprintf(command, sizeof(command), "iperf3 -c %s", server_ip);
-    printf("Testing network speed with iperf3 to server %s...\n", server_ip);
-    int result = system(command);
-    if (result != 0) {
-        printf("\033[31miperf3 test failed.\033[0m\n");
-    }
+bool iperf_test(const char* server_ip, char *log_save)
+{
+	char cmd_str[1024];
+	char command[256];
+	snprintf(command, sizeof(command), "iperf3 -c %s", server_ip);
+	sprintf(cmd_str, "LOG] Testing network speed with iperf3 to server %s...\n", server_ip);
+	strcat(log_save, cmd_str);
+	int result = system(command);
+	if (result != 0)
+	{
+		strcat(log_save, "[LOG] iperf3 test failed.\n");
+		return false;
+	}
+	return true;
 }
 
-int EthernetTest() {
-    // 1. $¸Ìl $^U Ux
-    check_network_interface();
+LogEntry ethernetTest()
+{
+	char *log_save = malloc(2048);
+	memset(log_save, 0, 2048);
 
-    // 2. $¸Ìl ð° L¤¸
-    const char* external_ip = "8.8.8.8";
-    ping_test(external_ip);
+	LogEntry result;
+	
+	if(!check_network_interface(log_save))
+	{
+		strcat(log_save, "[ERROR] Ethernet Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+	const char* external_ip = "8.8.8.8";
+	if(!ping_test(external_ip, log_save))
+	{
+		strcat(log_save, "[ERROR] Ethernet Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+    	char* raspberry_pi_ip = get_ip_address();
+	if (raspberry_pi_ip != NULL)
+	{
+		if(!iperf_test(raspberry_pi_ip, log_save))
+		{
+			strcat(log_save, "[ERROR] Ethernet Test Fail\n");
 
-    // 3. |<88> ¬ ^LtX IP ü<8c> Ux ^O $¸Ìl <8d>Ä L¤¸
-    char* raspberry_pi_ip = get_ip_address();
-    if (raspberry_pi_ip != NULL) {
-        iperf_test(raspberry_pi_ip);
-        free(raspberry_pi_ip);
-        return 1;
-    }
-    else {
-        printf("\033[31mFailed to retrieve Raspberry Pi IP address.\033[0m\n");
-        return 0;
-    }
+		}
+		else
+		{
+			strcat(log_save, "[SUCCESS] Ethernet Test Clear\n");
+		}
+		result.messgae = log_save;
+	        result.level = LOG_ERROR;
+		free(raspberry_pi_ip);
+		return result;
+	}
+	else
+	{
+		strcat(log_save, "[LOG] Failed to retrieve Raspberry Pi IP address.\n");
+		strcat(log_save, "[ERROR] Ethernet Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
 }
 
-int bluetoothTest() {
-    inquiry_info* ii = NULL;
-    int max_rsp, num_rsp;
-    int dev_id, sock, len, flags;
-    char addr[19] = { 0 };
-    char name[248] = { 0 };
-    int connected_devices = 0;
-    printf("bluetoothTest Start\n");
-    dev_id = hci_get_route(NULL);
-    if (dev_id < 0) {
-        perror("hci_get_route");
-        exit(1);
-    }
+LogEntry bluetoothTest()
+{
+	char *log_save = malloc(2048);
+	memset(0, log_save, 2048);
 
-    sock = hci_open_dev(dev_id);
-    if (sock < 0) {
-        perror("hci_open_dev");
-        exit(1);
-    }
+	LogEntry result;
+	inquiry_info* ii = NULL;
+	int max_rsp, num_rsp;
+	int dev_id, sock, len, flags;
+	char addr[19] = { 0 };
+	char name[248] = { 0 };
+	int connected_devices = 0;
+    
+	strcat(log_save, "[LOG] Bluetooth test Start\n");
+    
+	dev_id = hci_get_route(NULL);
+	if (dev_id < 0)
+	{
+		strcat(log_save, "[LOG] hci_get_route\n");
+		strcat(log_save, "[ERROR] Bluetooth Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+	
+	sock = hci_open_dev(dev_id);
+	if (sock < 0)
+	{
+		strcat(log_save, "[LOG] hci_open_dev\n");
+		strcat(log_save, "[LOG] Bluetooth Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+    	}
 
-    len = 8;
-    max_rsp = 255;
-    flags = IREQ_CACHE_FLUSH;
-    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
+	len = 8;
+	max_rsp = 255;
+	flags = IREQ_CACHE_FLUSH;
+	ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
 
-    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-    if (num_rsp < 0) {
-        perror("hci_inquiry");
-        exit(1);
-    }
+	num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
+	if (num_rsp < 0)
+	{
+		strcat(log_save, "[LOG] hci_inquiry\n");
+                strcat(log_save, "[LOG] Bluetooth Test Fail\n");
+                result.message = log_save;
+                result.level = LOG_ERROR;
+                return result;
+	}
+	
+	for (int i = 0; i < num_rsp; i++)
+	{
+		ba2str(&(ii + i)->bdaddr, addr);
+		memset(name, 0, sizeof(name));
+		if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name), name, 0) < 0)
+			strcpy(name, "[unknown]");
+		
+		// Check if the device is connected
+		struct sockaddr_rc addr_rc = { 0 };
+		int status;
+		int rfcomm_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+		addr_rc.rc_family = AF_BLUETOOTH;
+		addr_rc.rc_channel = 1;
+		str2ba(addr, &addr_rc.rc_bdaddr);
 
-    for (int i = 0; i < num_rsp; i++) {
-        ba2str(&(ii + i)->bdaddr, addr);
-        memset(name, 0, sizeof(name));
-        if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name), name, 0) < 0)
-            strcpy(name, "[unknown]");
+		status = connect(rfcomm_sock, (struct sockaddr*)&addr_rc, sizeof(addr_rc));
+		if (status == 0)
+		{
+			char conn_str[1024];
+			sprintf(conn_str, "[LOG] Device Adadress: %s\n", addr);
+			strcat(log_save, conn_str);
+			conn_str[0] = '\0';
+			sprintf(conn_str, "[LOG] Device Name: %s\n", name);
+			strcat(log_save, conn_str);
+			strcat(log_save, "Device is connected.\n");
+			connected_devices++;
+		}
+		close(rfcomm_sock);
+	}
+	if (connected_devices == 0)
+		strcat(log_save, "[LOG] No connected devices.\n");
+	free(ii);
+	close(sock);
 
-        // Check if the device is connected
-        struct sockaddr_rc addr_rc = { 0 };
-        int status;
-        int rfcomm_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-        addr_rc.rc_family = AF_BLUETOOTH;
-        addr_rc.rc_channel = 1;
-        str2ba(addr, &addr_rc.rc_bdaddr);
+	strcat(log_save, "[SUCCESS] Bluetooth Test Clear\n");
+	result.message = log_save;
+	result.level = LOG_ERROR;
 
-        status = connect(rfcomm_sock, (struct sockaddr*)&addr_rc, sizeof(addr_rc));
-        if (status == 0) {
-            printf("Device Address: %s\n", addr);
-            printf("Device Name: %s\n", name);
-            printf("Device is connected.\n");
-            connected_devices++;
-        }
-        close(rfcomm_sock);
-    }
-    if (connected_devices == 0) {
-        printf("\033[31mNo connected devices.\033[0m\n");
-        return 0;
-    }
-    else return 1;
-
-    free(ii);
-    close(sock);
+	return result;
 }
 
-int i2cTest() {
-    int fd;
-    int deviceAddress = 0x27; // I2C ¥X ü<8c>
-    //int bus = 1; // I2C <84>¤ <88>8
-    int check = 1;
-    // I2C ¥XÐ ð°
-    if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0) {
-        perror("I2C failed");
-        exit(1);
-    }
+LogEntry i2cTest()
+{
+	char *log_save = malloc(2048);
+	memset(0, log_save, 2048);
+	LogEntry result;
+	
+	int fd;
+	int deviceAddress = 0x27;
+    	if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0)
+	{
+		strcat(result.message = "[LOG] I2C ERROR\n");
+		strcat(result.message = "[ERROR] I2C Test Fail\n");
+		result.level = LOG_ERROR;
+        	return result;
+	}
 
-    // I2C ¥XÐ^\ pt0 }0
-    int readValue = wiringPiI2CRead(fd);
-    if (readValue < 0) {
-        perror("\033[31mI2C Read Fail\033[0m\n");
-        check = 0;
+    	int readValue = wiringPiI2CRead(fd);
+	if (readValue < 0) {
+		strcat(result.message, "[LOG] I2C Read Fail\n");
+		result.level = LOG_ERROR;
+		return result;
+	}
+    	else
+	{
+		char read_str[1024];
+		sprintf(read_str, "[LOG] Read Data: 0x%x\n", readValue);
+		strcat(log_save, read_str);
+		strcat(log_save, "[LOG] I2C Read Success\n");
+	}
 
-    }
-    else {
-        printf("Read Data: 0x%x\n", readValue);
-        printf("\033[32mI2C Read Success\033[0m\n");
-
-    }
-
-    // I2C ¥XÐ pt0 ð0
-    int writeValue = 0x88; // ø pt0
-    if (wiringPiI2CWrite(fd, writeValue) < 0) {
-        perror("\033[31mI2C Write Fail\033[0m\n");
-        check = 0;
-    }
-    else {
-        printf("Wirte Data: 0x%x\n", writeValue);
-        printf("\033[32mI2C Write Success\033[0m\n");
-
-    }
-    if(check == 1) return 1;
-    else return 0;
-
+     	int writeValue = 0x88; // ø pt0
+    	if (wiringPiI2CWrite(fd, writeValue) < 0)
+	{
+        	strcat(log_save, "[LOG] I2C Write Fail\n");
+		strcat(log_save, "[ERROR] I2C Test Fail\n");
+		result.message = log_save;
+		result.level = LOG_ERROR;
+		return result;
+	}
+    	else
+	{
+		char write_str[1024];
+		sprintf(write_str, "[LOG] Wirte Data: 0x%x\n", writeValue);
+		strcat(log_save, write_str);
+		strcat(log_save, "[SUCCESS] I2C Write Success");
+		result.message = log_save;
+		result.level = LOG_SUCCESS;
+		return result;
+	}
 }
