@@ -98,10 +98,6 @@ static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 			print_message(buffers, result);
 		}
 	}
-
-	else {
-		print_message(buffers, result);
-	}
 }
 
 static void gpio_button_clicked(GtkButton *button, gpointer user_data)
@@ -118,9 +114,6 @@ static void gpio_button_clicked(GtkButton *button, gpointer user_data)
 		if(result.message != NULL) {
 			print_message(buffers, result);
 		}
-	}
-	else {
-		print_message(buffers, result);
 	}
 }
 
@@ -141,10 +134,6 @@ static void i2c_button_clicked(GtkButton *button, gpointer user_data)
 			print_message(buffers, result);
 		}
 	}
-
-	else {
-		print_message(buffers, result);
-	}
 }
 
 static void mobile_button_clicked(GtkButton *button, gpointer user_data)
@@ -155,24 +144,20 @@ static void mobile_button_clicked(GtkButton *button, gpointer user_data)
 	LogEntry result = wifiTest();
 	if(result.message != NULL) {
 		print_message(buffers, result);
-	}
-
-	if(result.level = LOG_SUCCESS) {
+	}	
+	
+	if(result.level == LOG_SUCCESS) {
 		result = ethernetTest();
 		if(result.message != NULL) {
 			print_message(buffers, result);
 		}
 	}
 
-	if(result.level = LOG_SUCCESS) {
+	if(result.level == LOG_SUCCESS) {
 		result = bluetoothTest();
 		if(result.message != NULL) {
 			print_message(buffers, result);
 		}
-	}
-	
-	else {
-		print_message(buffers, result);
 	}
 }
 

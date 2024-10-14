@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <string.h>
-//#include <wiringPiSPI.h>
-//#include <wiringPi.h>
-//#include <wiringPiI2C.h>
+#include <wiringPiSPI.h>
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>

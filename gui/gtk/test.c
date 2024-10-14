@@ -711,9 +711,11 @@ LogEntry wifiTest()
 		{
 			if (strstr(buffer, "off/any") == NULL)
 			{
+				char buf_str[1024];
 				is_connected = 1;
 				strcat(log_save, "[LOG] Connected to Wi-Fi network.\n");
-				strcat(log_save,  buffer);
+				sprintf(buf_str, "[LOG] %s", buffer);
+				strcat(log_save, buf_str);
 				break;
 			}
 		}
@@ -722,7 +724,12 @@ LogEntry wifiTest()
 	{
 		while (fgets(buffer, sizeof(buffer), fp) != NULL)
 		{
-			strcat(log_save, buffer);
+			if(buffer[0] != '\n')
+			{
+				char buf_str[1024];
+				sprintf(buf_str, "[LOG] %s", buffer);
+				strcat(log_save, buf_str);
+			}
 		}
 		strcat(log_save, "[SUCCESS] Wi-Fi Test Clear\n");
 		result.message = log_save;
@@ -1020,5 +1027,5 @@ LogEntry i2cTest()
 		result.message = log_save;
 		result.level = LOG_SUCCESS;
 		return result;
-	}
+	};
 }
