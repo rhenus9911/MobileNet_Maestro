@@ -360,7 +360,7 @@ LogEntry memoryErrorCheck()
 	memset(log_save, 0, 2048);
 
 	uint8_t p = 0xAA;
-	uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint_8));
+	uint8_t* memory = (uint8_t*)malloc(BUFFER_SIZE * sizeof(uint8_t));
 	LogEntry result;
 
 	if(!memory)
@@ -613,12 +613,12 @@ bool spi_loopback_test(char *log_save, int channel)
 		strcat(log_save, cn_str);
 		return false;
 	}
-	strcat(log_svae, "[LOG] Received data: ");
+	strcat(log_save, "[LOG] Received data: ");
 	for (int i = 0; i < DATA_LENGTH; i++)
 	{
 		char tmp_str[1024];
 		sprintf(tmp_str, "%02X ", data[i]);
-		strcat(log_save, tmp_stR);
+		strcat(log_save, tmp_str);
 		receivedData[i] = data[i];
 	}
     	strcat(log_save, "\n");
@@ -640,7 +640,7 @@ bool spi_loopback_test(char *log_save, int channel)
 LogEntry SPITest()
 {
 	char *log_save = malloc(2048);
-	memset(0, log_save, 2048);
+	memset(log_save, 0, 2048);
 	
 	LogEntry result;
 	
@@ -724,7 +724,7 @@ LogEntry wifiTest()
 		{
 			strcat(log_save, buffer);
 		}
-		strcat(log_save, "[SUCCESS] Wi-Fi Test Clear\n";
+		strcat(log_save, "[SUCCESS] Wi-Fi Test Clear\n");
 		result.message = log_save;
 		result.level = LOG_SUCCESS;
 	}
@@ -854,7 +854,7 @@ LogEntry ethernetTest()
 		result.level = LOG_ERROR;
 		return result;
 	}
-    	char* raspberry_pi_ip = get_ip_address();
+    	char* raspberry_pi_ip = get_ip_address(log_save);
 	if (raspberry_pi_ip != NULL)
 	{
 		if(!iperf_test(raspberry_pi_ip, log_save))
@@ -866,7 +866,7 @@ LogEntry ethernetTest()
 		{
 			strcat(log_save, "[SUCCESS] Ethernet Test Clear\n");
 		}
-		result.messgae = log_save;
+		result.message = log_save;
 	        result.level = LOG_ERROR;
 		free(raspberry_pi_ip);
 		return result;
@@ -884,7 +884,7 @@ LogEntry ethernetTest()
 LogEntry bluetoothTest()
 {
 	char *log_save = malloc(2048);
-	memset(0, log_save, 2048);
+	memset( log_save, 0, 2048);
 
 	LogEntry result;
 	inquiry_info* ii = NULL;
@@ -975,15 +975,15 @@ LogEntry bluetoothTest()
 LogEntry i2cTest()
 {
 	char *log_save = malloc(2048);
-	memset(0, log_save, 2048);
+	memset(log_save, 0, 2048);
 	LogEntry result;
 	
 	int fd;
 	int deviceAddress = 0x27;
     	if ((fd = wiringPiI2CSetupInterface("/dev/i2c-1", deviceAddress)) < 0)
 	{
-		strcat(result.message = "[LOG] I2C ERROR\n");
-		strcat(result.message = "[ERROR] I2C Test Fail\n");
+		strcat(result.message, "[LOG] I2C ERROR\n");
+		strcat(result.message, "[ERROR] I2C Test Fail\n");
 		result.level = LOG_ERROR;
         	return result;
 	}

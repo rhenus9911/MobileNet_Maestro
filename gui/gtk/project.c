@@ -78,7 +78,101 @@ static void cpu_button_clicked(GtkButton *button, gpointer user_data) {
 	}
 
 	// Memory
-		
+	if(result.level == LOG_SUCCESS) {
+		result = memoryFuncCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	if(result.level == LOG_SUCCESS) {
+		result = memoryBandWidthCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	if(result.level == LOG_SUCCESS) {
+		result = memoryErrorCheck();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	else {
+		print_message(buffers, result);
+	}
+}
+
+static void gpio_button_clicked(GtkButton *button, gpointer user_data)
+{
+	Buffers *buffers = (Buffers *)user_data;
+
+	// GPIO
+	result = GpioTest();
+	if(result.message != NULL) {
+		print_message(buffers, result);
+	}
+	if(result.level == LOG_SUCCESS) {
+		result = PWMTest();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+	else {
+		print_message(buffers, result);
+	}
+}
+
+static void i2c_button_clicked(GtkButton *button, gpointer user_data)
+{
+	Buffers *buffers = (Buffers *)user_data;
+
+	// SPI
+	result = SPITest();
+	if(result.message != NULL) {
+		print_message(buffers, result);
+	}
+
+	// I2C
+	if(result.level == LOG_SUCCESS) {
+		result = i2cTest();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	else {
+		print_message(buffers, result);
+}
+
+static void mobile_button_clicked(GtkBUtton *button, gpointer user_data)
+{
+	Buffers *buffers = (Buffers *)user_data;
+	
+	// Wi-Fi
+	result = wifiTest();
+	if(result.message != NULL) {
+		print_message(buffers, result);
+	}
+
+	if(result.level = LOG_SUCCESS) {
+		result = ethernetTest();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+
+	if(result.level = LOG_SUCCESS) {
+		result = bluetoothTest();
+		if(result.message != NULL) {
+			print_message(buffers, result);
+		}
+	}
+	
+	else {
+		print_message(buffers, result);
+	}
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -174,15 +268,20 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	buffers->console_buffer = console_buffer;
 
 	g_signal_connect(cpu_button, "clicked", G_CALLBACK(cpu_button_clicked), buffers);
-	//g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
+	g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
+	g_signal_connect(i2c_button, "clicked", G_CALLBACK(i2c_button_clicked), buffers);
+	g_signal_connect(mobile_button, "clicked", G_CALLBACK(mobile_button_clicked), buffers);
 	gtk_widget_show(window);
 }
 
 int main(int argc, char **argv) {
 	GtkApplication *app;
 	int status;
-
+	
+	// Raspberry Pi
 	app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_DEFAULT_FLAGS);
+	
+	// Ubuntu
 	//app = gtk_application_new("kr.mnm.autoprogram", G_APPLICATION_FLAGS_NONE);
 	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
