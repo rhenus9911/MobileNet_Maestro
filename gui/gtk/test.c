@@ -436,22 +436,21 @@ LogEntry GpioTest()
 	{
 		pinMode(pins[i], OUTPUT);
 		digitalWrite(pins[i], HIGH);
-	}
-	usleep(300000);
-        if (digitalRead(pins[i]) == LOW)
-	{
-		sprintf(gpio_str, "[LOG] GPIO %d failed\n", pins[i]);
-		strcat(log_save, gpio_str);
-		strcat(log_save, "[ERROR] GPIO Test Fail\n");
-		result.message = log_save;
-		result.level = LOG_ERROR;
-		resetGPIO();
+		usleep(300000);
+		if (digitalRead(pins[i]) == LOW)
+		{
+			sprintf(gpio_str, "[LOG] GPIO %d failed\n", pins[i]);
+			strcat(log_save, gpio_str);
+			strcat(log_save, "[ERROR] GPIO Test Fail\n");
+			result.message = log_save;
+			result.level = LOG_ERROR;
+			resetGPIO();
 
-		return result;
+			return result;
+		}
+		digitalWrite(pins[i], LOW);
+		usleep(300000);
 	}
-	digitalWrite(pins[i], LOW);
-	usleep(300000);
-
 	strcat(log_save, "[LOG] GPIO Success\n");
 	strcat(log_save, "[SUCCESS] GPIO Test Clear\n");
 	result.message = log_save;
@@ -513,6 +512,7 @@ double logPWMInput(char *log_save)
 bool PWMWriteCheck(char *log_save, int pin)
 {
 	char pin_str[1024];
+	double n;
 
 	if(pin == PWM_PIN12) strcat(log_save, "GPIO12 PWM Test\n");
 	else if(pin == PWM_PIN13) strcat(log_save, "GPIO13 PWM Test\n");

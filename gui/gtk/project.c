@@ -109,7 +109,7 @@ static void gpio_button_clicked(GtkButton *button, gpointer user_data)
 	Buffers *buffers = (Buffers *)user_data;
 
 	// GPIO
-	result = GpioTest();
+	LogEntry result = GpioTest();
 	if(result.message != NULL) {
 		print_message(buffers, result);
 	}
@@ -129,7 +129,7 @@ static void i2c_button_clicked(GtkButton *button, gpointer user_data)
 	Buffers *buffers = (Buffers *)user_data;
 
 	// SPI
-	result = SPITest();
+	LogEntry result = SPITest();
 	if(result.message != NULL) {
 		print_message(buffers, result);
 	}
@@ -144,14 +144,15 @@ static void i2c_button_clicked(GtkButton *button, gpointer user_data)
 
 	else {
 		print_message(buffers, result);
+	}
 }
 
-static void mobile_button_clicked(GtkBUtton *button, gpointer user_data)
+static void mobile_button_clicked(GtkButton *button, gpointer user_data)
 {
 	Buffers *buffers = (Buffers *)user_data;
 	
 	// Wi-Fi
-	result = wifiTest();
+	LogEntry result = wifiTest();
 	if(result.message != NULL) {
 		print_message(buffers, result);
 	}
