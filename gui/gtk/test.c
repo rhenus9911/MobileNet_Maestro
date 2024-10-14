@@ -520,8 +520,8 @@ bool PWMWriteCheck(char *log_save, int pin)
 	else if(pin == PWM_PIN19) strcat(log_save, "GPIO19 PWM Test\n");
 	pwmWrite(pin, 0);
 	sprintf(pin_str, "input value : %d\n", 512);
-	strcat(log_svae, pin_str);
-	n = logPWMInput();
+	strcat(log_save, pin_str);
+	n = logPWMInput(log_save);
 	if (n >= 49 && n <= 51)
 	{
 		strcat(log_save, "[LOG] PWM Success\n");
