@@ -181,7 +181,7 @@ LogEntry cpuFPCheck()
 	}
 	else
 	{
-		strcat(log_save, "[SUCCESS] CPU FP Check Failed\n");
+		strcat(log_save, "[ERROR] CPU FP Check Failed\n");
 		result.level = LOG_ERROR;
 	}
 
