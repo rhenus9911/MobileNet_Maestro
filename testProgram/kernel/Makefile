@@ -1,15 +1,10 @@
-KERNEL_SRC = /usr/src/linux
-TARGET := app
-obj-m := nobrand.o
+obj-m += testkernel.o
+KDIR := /usr/src/linux
+KBUILD_EXTRA_SYMBOLS := /lib/modules//build
+PWD := 
 
-all: driver app
-
-driver:
-	make -C $(KERNEL_SRC) M=$(PWD) modules
-
-app:
-	$(CC) -o $@ $@.c
+all:
+	 -C  M= EXTRA_CFLAGS=-I/usr/src/linux/include modules
 
 clean:
-	make -C $(KERNEL_SRC) M=$(PWD) clean
-	rm -f *.o $(TARGET)
+	 -C  M= clean

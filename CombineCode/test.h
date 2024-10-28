@@ -18,13 +18,8 @@
 #include <sys/socket.h>
 #include <ctype.h>
 #include <stdint.h>
-#include <sys/time.h>
 #include <time.h>
 #include <math.h>
-
-
-
-
 
 
 int GpioTest();

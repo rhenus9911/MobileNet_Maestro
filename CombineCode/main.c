@@ -3,8 +3,6 @@
 #include <fcntl.h>
 #include "test.h"
 
-
-
 int n = 1;
 int m;
 

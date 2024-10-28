@@ -1,1 +1,1 @@
-savedcmd_/home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/modules.order := {   echo /home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/nobrand.o; :; } > /home/jeonghoon/Desktop/MobileNet_Maestro/testProgram/kernel/modules.order
+savedcmd_/home/sangji/MobileNet_Maestro/testProgram/kernel/modules.order := {   echo /home/sangji/MobileNet_Maestro/testProgram/kernel/testkernel.o; :; } > /home/sangji/MobileNet_Maestro/testProgram/kernel/modules.order
