@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "test.h"
 
+#include <cairo.h>
+
 typedef struct {
 	GtkTextBuffer *result_buffer;
 	GtkTextBuffer *log_buffer;
@@ -18,7 +20,7 @@ static void add_message_to_console(GtkTextBuffer *console_buffer, const char *me
 	if (tag == NULL) {
 		tag = gtk_text_tag_new(tag_name);
 		const char *color = strcmp(tag_name, "red") == 0 ? "red" : "green";
-		g_object_set(tag, "foreground", tag_name, NULL);
+		g_object_set(tag, "foreground", color, NULL);
 		gtk_text_tag_table_add(tag_table, tag);
 	}
 	
@@ -111,6 +113,8 @@ static void gpio_button_clicked(GtkButton *button, gpointer user_data)
 	}
 	if(result.level == LOG_SUCCESS) {
 		result = PWMTest();
+		
+
 		if(result.message != NULL) {
 			print_message(buffers, result);
 		}
@@ -161,6 +165,45 @@ static void mobile_button_clicked(GtkButton *button, gpointer user_data)
 	}
 }
 
+static void draw_graph(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer user_data) {
+    // Set the background color
+    cairo_set_source_rgb(cr, 1, 1, 1); // White background
+    cairo_paint(cr);
+
+    // Set the line color for the axes
+    cairo_set_source_rgb(cr, 0, 0, 0); // Black color for axes
+    cairo_set_line_width(cr, 2.0);
+
+    // Draw axes
+    cairo_move_to(cr, 50, height - 50);
+    cairo_line_to(cr, width - 50, height - 50); // x-axis
+    cairo_move_to(cr, 50, height - 50);
+    cairo_line_to(cr, 50, 50); // y-axis
+    cairo_stroke(cr);
+
+    // Set the line color for the graph
+    cairo_set_source_rgb(cr, 0.1, 0.6, 0.1); // Green color for graph line
+    cairo_set_line_width(cr, 2.0);
+
+    // Draw graph like an oscilloscope (square wave)
+    int x_start = 50;
+    int y_start = height - 50;
+    int step = 40; // Increased step size for better visibility
+
+    int values[] = {0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}; // Example values
+    int prev_y = y_start - (values[0] * 100);
+    cairo_move_to(cr, x_start, prev_y);
+
+    for (int i = 1; i < 19; i++) {
+        int x = x_start + (i * step);
+        int y = y_start - (values[i] * 100);
+        cairo_line_to(cr, x, prev_y); // Horizontal line
+        cairo_line_to(cr, x, y); // Vertical line
+        prev_y = y;
+    }
+    cairo_stroke(cr);
+}
+
 static void activate(GtkApplication *app, gpointer user_data) {
 	GtkWidget *window = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(window), "Program");
@@ -182,6 +225,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
 	GtkWidget *i2c_button = gtk_button_new_with_label("I2C/SPI");
 	gtk_widget_set_margin_top(i2c_button, 5);
+	
 
 	GtkWidget *mobile_button = gtk_button_new_with_label("Mobile");
         gtk_widget_set_margin_top(mobile_button, 5);
@@ -223,6 +267,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), log_content, gtk_label_new("Log"));
 
+	/*
+	 * Graph tab
+	 */
+		GtkWidget *graph_content = gtk_drawing_area_new();
+	gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(graph_content), draw_graph, NULL, NULL);
+	gtk_widget_set_size_request(graph_content, 400, 300);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), graph_content, gtk_label_new("Graph"));
+
 	gtk_widget_set_hexpand(notebook, TRUE);
 	gtk_widget_set_vexpand(notebook, TRUE);
 
@@ -230,7 +282,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	GtkWidget *content_area = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_append(GTK_BOX(content_area), sidebar);
 	gtk_box_append(GTK_BOX(content_area), notebook);
-
 	/*
 	 * console
 	 */
@@ -257,7 +308,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
 	g_signal_connect(gpio_button, "clicked", G_CALLBACK(gpio_button_clicked), buffers);
 	g_signal_connect(i2c_button, "clicked", G_CALLBACK(i2c_button_clicked), buffers);
 	g_signal_connect(mobile_button, "clicked", G_CALLBACK(mobile_button_clicked), buffers);
-	gtk_widget_show(window);
+	
+	gtk_window_present(GTK_WINDOW(window));
 }
 
 int main(int argc, char **argv) {
@@ -276,4 +328,3 @@ int main(int argc, char **argv) {
 
 	return status;
 }
-
