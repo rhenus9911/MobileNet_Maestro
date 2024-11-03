@@ -1,65 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <string.h>
-#include <wiringPiSPI.h>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
-#include <sys/types.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-#include <bluetooth/rfcomm.h>
-#include <sys/socket.h>
-#include <ctype.h>
-#include <stdint.h>
-#include <sys/time.h>
-#include <time.h>
-#include <math.h>
-
-#define GPIO_BASE 0xfe200000
-#define GPFSEL0 0x00
-#define GPSET0 0x1c
-#define GPCLR0 0x28
-#define GPLEV0 0x34
-#define GPFSEL1 0x04
-#define GPFSEL2 0x08
-#define GPFSEL3 0x0c
-#define GPSET1 0x20
-#define GPCLR1 0x2c
-#define GPLEV1 0x38
-#define PWM_PIN18 1    // BCM_GPIO 18, Physical Pin 12
-#define INPUT_PIN 7  // BCM_GPIO 4, Physical Pin 7
-#define PWM_PIN12 26 // BCM 12, wipi 26
-#define PWM_PIN13 23 // 13, 23
-#define PWM_PIN19 24 // 19, 24
-#define SPI_CHANNEL_0 0  // SPI D 0 (CE0)
-#define SPI_CHANNEL_1 1  // SPI D 1 (CE1)
-#define SPI_SPEED 500000 // SPI Ä (500kHz)
-#define DATA_LENGTH 10
-#define BUFFER_SIZE 1024
-#define RED "\033[0;31m"
-#define GREEN "\033[0;32m"
-#define YELLOW "\033[0;33m"
-#define RESET "\033[0m"
-
-#define BUFFER_SIZE 1024
-#define STREAM_ARRAY_SIZE 100000000
-#define NTIMES 20
-#define SUCCESS_TEST 27
-#define FAIL_TEST 28
+#include "test.h"
 
 int funcCheck[5] = { 0 };
 
 double* array;
+char* memory_block;
 static double a[STREAM_ARRAY_SIZE];
 static double b[STREAM_ARRAY_SIZE];
-
 
 int GpioTest() {
     // wiringPi 0T
@@ -540,7 +486,6 @@ double timeCheck()
 
 int cpuNumCheck()
 {
-    int check = 0;
     FILE* cpuinfo = popen("grep processor /proc/cpuinfo | wc -l", "r");
     FILE* modelname = popen("grep Model /proc/cpuinfo", "r");
     FILE* lscpu = popen("lscpu | grep 'CPU'", "r");
@@ -580,32 +525,58 @@ int cpuNumCheck()
     return 1;
 }
 
+void *prime_count(void *arg)
+{
+    ThreadData* data = (ThreadData*)arg;
+    int count=0;
+    
+    for(int i=data->start;i<data->end;i++)
+    {
+	int is_prime=1;
+	for(int j=2;j<=i;j++)
+	{
+	    if(i%j==0)
+	    {
+		is_prime=0;
+		break;
+	    }
+	}
+	if(is_prime) count++;
+    }
+    data->count=count;
+    pthread_exit(NULL);
+}
+
 int cpuPerformCheck()
 {
-    char buffer[1024];
     double cpuSpeed;
-    char* ptr;
-    //double cpuTime;
+    double start, end;
 
-    FILE* fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
-    if (fp == NULL)
+    pthread_t threads[THREADS];
+    ThreadData thread_data[THREADS];
+
+    start = timeCheck();
+
+    for(int i=0;i<THREADS;i++)
     {
-        printf(RED "cpu Funciton is Failed\n" RESET);
-        return 0;
-    }
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
-    {
-        if ((ptr = strstr(buffer, "events per second")) != NULL)
-        {
-            sscanf(ptr, "events per second: %lf", &cpuSpeed);
-            printf("events per second: %.2lf\n", cpuSpeed);
-        }
+	thread_data[i].start = i * RANGE + 2;
+        thread_data[i].end = (i+1) * RANGE;
+	pthread_create(&threads[i], NULL, prime_count, &thread_data[i]);
     }
 
-    if (cpuSpeed >= 1000) return 1;
+    int total_count=0;
+    for(int i=0;i<THREADS;i++)
+    {
+	pthread_join(threads[i], NULL);
+	total_count += thread_data[i].count;
+    }
+
+    end = timeCheck();
+    cpuSpeed = (double)(end-start);
+
+
+    if(cpuSpeed <= 1.0) return 1;
     else return 0;
-
-    pclose(fp);
 }
 
 int cpuIPSCheck()
@@ -617,16 +588,16 @@ int cpuIPSCheck()
     double result = 0.0;
 
     start = timeCheck();
-    for (int i = 0; i < loop; i++) {}
+    for (int i = 0; i < loop; i++) { asm(""); }
     end = timeCheck();
 
     cpu_time = ((double)(end - start)) / CLOCKS_PER_SEC;
     result = instructions / cpu_time;
-    result /= 1000000000;
+    result /= 1e9;
 
     printf("IPS: %.2lf GIPS\n", result);
 
-    if (result >= 0.5) return 1;
+    if (result >= 2.0) return 1;
     else return 0;
 }
 
@@ -635,8 +606,7 @@ int cpuFPCheck()
     double start, end;
 
 
-    double a = 1.234567, b = 9.87654;
-    double c, sum = 0.0;
+    double a = 1.234567, b = 9.87654, c = 3.14159;
 
     long long num = 1000000000;
 
@@ -644,58 +614,67 @@ int cpuFPCheck()
 
     for (long long i = 0; i < num; i++)
     {
-        c = a * b;
-        sum += c;
+	int tmp;
+        tmp += a * b;
+        tmp = c / (a+1.0);
+	tmp = sqrt(tmp);
+	tmp += pow(b, 1.5);
     }
 
     end = timeCheck();
 
     double time_stemp = end - start;
 
-    double flops = (num * 3.0) / time_stemp / 1e6;
+    double flops = (num * 4.0) / time_stemp / 1e6;
 
     printf("FLOPS: %.2lf GFLOPS\n", flops);
 
-    if (flops >= 18) return 1;
+    if (flops >= 48) return 1;
     else return 0;
+}
+
+void *write_memory(void *args)
+{
+    size_t start = (size_t)args * (MEM_SIZE / THREADS);
+    size_t end = start + (MEM_SIZE / THREADS);
+
+    for(size_t i = start; i < end; i++)
+    {
+	memory_block[i] = (char)(i % 256);
+    }
+    return NULL;
 }
 
 int memoryFuncCheck()
 {
-    char buffer[1024];
-    char* ptr;
-    double oper;
-    double trans;
+    double total_operations = 0.0;
 
-    FILE* lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
-    FILE* fp = popen("sysbench memory --threads=4 run", "r");
-    if (lsmem == NULL)
+    memory_block = malloc(MEM_SIZE);
+    if(!memory_block)
     {
-        printf(RED "Memory is not Access\n" RESET);
-        return 0;
-    }
-    else
-    {
-        printf("Memory is Access\n");
-    }
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
-    {
-        if ((ptr = strstr(buffer, "Total operations")) != NULL)
-        {
-            sscanf(ptr, "Total operations: %lf", &oper);
-            printf("Total operations: %.2lf\n", oper);
-        }
-        else if ((ptr = strstr(buffer, "transferred")) != NULL)
-        {
-            sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-            printf("MiB Transferred: %.2lf MiB/sec\n", trans);
-        }
+	printf(RED "Memory allocation failed\n" RESET);
+	return 0;
     }
 
-    pclose(fp);
-    pclose(lsmem);
+    pthread_t threads[THREADS];
+    double start = timeCheck();
+	
+    for (size_t i = 0; i < THREADS; i++) {
+	pthread_create(&threads[i], NULL, write_memory, (void*)i);
+    }
+
+    for(size_t i = 0; i < THREADS; i++)
+    {
+	pthread_join(threads[i], NULL);
+    }
+    double end = timeCheck();
+    double write_time = (double)(end - start);
+    total_operations = (MEM_SIZE / (1024 * 1024)) / write_time;
+
     
-    if (oper >= 5000000) return 1;
+    printf("Memory operations: %.6f MBops/sec\n", total_operations);
+    
+    if(total_operations >= 1.0) return 1;
     else return 0;
 }
 

@@ -10,7 +10,7 @@ OBJ = main.o test.o
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $(OBJ) -lbluetooth -lwiringPi
+	$(CC) -o $@ $(OBJ) -lbluetooth -lwiringPi -lm
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
