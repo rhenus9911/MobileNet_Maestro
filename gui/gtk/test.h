@@ -25,6 +25,7 @@
 #include <time.h>
 #include <math.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #define GPSET0 0x1c
 #define GPCLR0 0x28
@@ -55,6 +56,9 @@
 #define NTIMES 20
 #define SUCCESS_TEST 27
 #define FAIL_TEST 28
+#define THREADS 4
+#define MEM_SIZE 1024 * 1024 * 1024
+#define RANGE 1000000
 
 typedef enum {
     LOG_SUCCESS,
@@ -66,10 +70,17 @@ typedef struct {
     LogLevel level;
 } LogEntry;
 
+typedef struct {
+    int start;
+    int end;
+    int count;
+} ThreadData;
+
 
 // CPU Check
 LogEntry cpuNumCheck();
 LogEntry cpuPerformCheck();
+void *prime_count(void *arg);
 LogEntry cpuIPSCheck();
 LogEntry cpuFPCheck();
 
@@ -78,6 +89,7 @@ LogEntry memoryFuncCheck();
 void readBandWidth();
 void writeBandWidth();
 void copyBandWidth();
+void *write_meory(void* arg);
 LogEntry memoryBandWidthCheck();
 LogEntry memoryErrorCheck();
 

@@ -3,6 +3,7 @@
 int funcCheck[5] = { 0 };
 
 double* array;
+char *memory_block;
 static double a[STREAM_ARRAY_SIZE];
 static double b[STREAM_ARRAY_SIZE];
 
@@ -64,6 +65,28 @@ LogEntry cpuNumCheck()
 	return result;
 }
 
+void *prime_count(void *arg)
+{
+	ThreadData* data = (ThreadData*)arg;
+	int count = 0;
+	
+	for(int i=data->start; i<data->end;i++)
+	{
+		int is_prime=1;
+		for(int j=2;j*j<=i;j++)
+		{
+			if(i%j==0)
+			{
+				is_prime=0;
+				break;
+			}
+		}
+		if(is_prime) count++;
+	}
+	data->count=count;
+	pthread_exit(NULL);
+}
+
 LogEntry cpuPerformCheck()
 {
 	char *log_save = malloc(2048);
@@ -71,41 +94,45 @@ LogEntry cpuPerformCheck()
 	char buffer[1024];
 	double cpuSpeed;
 	char *ptr;
+	clock_t start, end;
 	LogEntry result;
 
-	FILE *fp = popen("sysbench cpu --cpu-max-prime=20000 --threads=4 run", "r");
-	if(fp == NULL)
-	{
-		result.message = "[ERROR] CPU Function is Failed\n";
-		result.level = LOG_ERROR;
-		return result;
-	}
-	while(fgets(buffer, sizeof(buffer), fp) != NULL)
-	{
-		if((ptr = strstr(buffer, "events per second")) != NULL)
-		{
-			char speed_str[BUFFER_SIZE];
-			sscanf(ptr, "events per second: %lf", &cpuSpeed);
-			sprintf(speed_str, "[LOG] events per second: %.2lf\n", cpuSpeed);
-			strcat(log_save, speed_str);
-		}
-		
-	}
-	if(cpuSpeed >= 1000)
-	{
+	pthread_t threads[THREADS];
+	ThreadData thread_data[THREADS];
 
-		strcat(log_save, "[SUCCESS] CPU Perform Check Clear\n");
-		result.level = LOG_SUCCESS;
-	}
-	else
-	{
-		strcat(log_save, "[ERROR] CPU Perform Check Failed\n");
-		result.level = LOG_ERROR;
+	start = timeCheck();
+	
+	for(int i=0;i<THREADS;i++) {
+	    thread_data[i].start = i * RANGE + 2;
+	    thread_data[i].end = (i + 1) * RANGE;
+	    pthread_create(&threads[i], NULL, prime_count, &thread_data[i]);
 	}
 
-	result.message = log_save;
+	int total_count = 0;
+	for( int i=0;i<THREADS;i++) {
+	    pthread_join(threads[i], NULL);
+	    total_count += thread_data[i].count;
+	}
+	
+	end = timeCheck();
+	cpuSpeed = (double)(end-start);
+	char speed_str[BUFFER_SIZE];
+	
+	sprintf(speed_str, "[LOG] CPU operations: %.6lf seconds\n", cpuSpeed);
+    	strcat(log_save, speed_str);
+	
+	if(cpuSpeed <= 1.0)
+    	{
+            strcat(log_save, "[SUCCESS] CPU Perform Check Clear\n");
+            result.level = LOG_SUCCESS;
+        }
+        else
+        {
+            strcat(log_save, "[ERROR] CPU Perform Check Failed\n");
+            result.level = LOG_ERROR;
+        }
 
-	pclose(fp);
+        result.message = log_save;
 	return result;
 }
 
@@ -114,20 +141,20 @@ LogEntry cpuIPSCheck()
 	char *log_save = malloc(2048);
 	memset(log_save, 0, 2048);    
 
-	clock_t start, end;
+	double start, end;
 	double cpu_time;
-	long long int instructions = 10006964235;
+	long long int instructions =10006964235;
 	int loop = 1000000000;
 	double res = 0.0;
 	char ips_str[BUFFER_SIZE];
 	LogEntry result;
 
 	start = timeCheck();
-	for(int i=0;i<loop;i++) {}
+	for(int i=0;i<loop;i++) { asm(""); } 
 	end = timeCheck();
-	cpu_time = ((double)(end-start)) / CLOCKS_PER_SEC;
+	cpu_time = end - start;
 	res = instructions / cpu_time;
-	res /= 1000000000;
+	res /= 1e9;
 
 	sprintf(ips_str, "[LOG] IPS: %.2lf GIPS\n", res);
 	strcat(log_save, ips_str);
@@ -161,13 +188,16 @@ LogEntry cpuFPCheck()
 	start = timeCheck();
 	for(long long i=0;i<num;i++)
 	{
-		c = a*b;
-		sum += c;
+		int tmp;
+		tmp += a*b;
+		tmp = c / (a+1.0);
+		tmp = sqrt(tmp);
+		tmp += pow(b, 1.5);
 	}
 	end = timeCheck();
 
 	double time_stamp = end - start;
-	double flops = (num * 3.0) / time_stamp / 1e6;
+	double flops = (num * 4.0) / time_stamp / 1e6;
 
 	char fps_str[BUFFER_SIZE];
 	sprintf(fps_str, "[LOG] FLOPS: %.2lf GFLOPS\n", flops);
@@ -180,13 +210,25 @@ LogEntry cpuFPCheck()
 		result.level = LOG_SUCCESS;
 	}
 	else
-	{
+	{	
 		strcat(log_save, "[ERROR] CPU FP Check Failed\n");
 		result.level = LOG_ERROR;
 	}
 
 	result.message = log_save;
 	return result;
+}
+
+void *write_memory(void *args)
+{
+	size_t start = (size_t)args * (MEM_SIZE / THREADS);
+	size_t end = start + (MEM_SIZE / THREADS);
+	
+	for(size_t i = start; i < end; i++)
+	{
+		memory_block[i] = (char)(i%256);
+	}
+	return NULL;
 }
 
 LogEntry memoryFuncCheck()
@@ -196,53 +238,46 @@ LogEntry memoryFuncCheck()
 	LogEntry result;
 
 	char buffer[1024];
-	char *ptr;
-	double oper;
-	double trans;
+	double total_operations = 0.0;
 
-	FILE* lsmem = popen("free | grep Mem | awk '{print $7}'", "r");
-	FILE* fp = popen("sysbench memory --threads=4 run", "r");
-	if(lsmem == NULL)
-	{
-		strcat(result.message, "[LOG] Memory is not Access\n");
-		strcat(result.message, "[ERROR] Memory Func Check Fail\n");
-		result.level = LOG_ERROR;
-		return result;
-	}
+	memory_block = malloc(MEM_SIZE);
+	if (!memory_block) {
+		strcat(log_save, "[ERROR] Memory allocation failed\n");
+		result.message = log_save;
+        	result.level = LOG_ERROR;
+        	return result;
+    	}
+
+	pthread_t threads[THREADS];
+     	clock_t start = timeCheck();
 	
-	while(fgets(buffer, sizeof(buffer), fp) != NULL)
+    	for (size_t i = 0; i < THREADS; i++) {
+        	pthread_create(&threads[i], NULL, write_memory, (void*)i);
+    	}
+	for(size_t i = 0; i < THREADS; i++)
 	{
-		if((ptr = strstr(buffer, "Total operations")) != NULL)
-		{
-			char oper_str[1024];
-			sscanf(ptr, "Total operations: %lf", &oper);
-			sprintf(oper_str, "[LOG] Total operations: %.2lf\n", oper);
-			strcat(log_save, oper_str);
-		}
-		else if((ptr = strstr(buffer, "transferred")) != NULL)
-		{
-			char trans_str[1024];
-			sscanf(ptr, "transferred (%lf MiB/sec)", &trans);
-			sprintf(trans_str, "[LOG] MiB Transferred: %.2lf MiB/sec\n", trans);
-			strcat(log_save, trans_str);
-		}
+		pthread_join(threads[i], NULL);
 	}
+    	clock_t end = timeCheck();
+    	double write_time = (double)(end - start);
+    	total_operations = (MEM_SIZE / (1024 * 1024)) / write_time;
 
-	if(oper >= 5000000)
-	{
-		strcat(log_save, "[SUCCESS] Memory is Access\n");
-		result.level = LOG_SUCCESS;
-	}
-	else
-	{
-		strcat(log_save, "[ERROR] Memory Func Check Failed\n");
-		result.level = LOG_ERROR;
-	}
+    	char oper_str[1024];
+    	sprintf(oper_str, "[LOG] Memory operations: %.6f MBops/sec\n", total_operations);
+    	strcat(log_save, oper_str);
 
-	result.message = log_save;
-	pclose(fp);
-	pclose(lsmem);
+    	if(total_operations >= 1.0) {
+        	strcat(log_save, "[SUCCESS] Memory Function Check Clear\n");
+        	result.level = LOG_SUCCESS;
+    	}
+	else {
+        	strcat(log_save, "[ERROR] Memory Function Check Failed\n");
+        	result.level = LOG_ERROR;
+    	}
 
+    	result.message = log_save;
+    	free(memory_block);
+	
 	return result;
 }
 
